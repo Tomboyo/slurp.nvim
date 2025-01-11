@@ -1,0 +1,3 @@
+{
+  "tomboyo/nvim-slurp"
+}
