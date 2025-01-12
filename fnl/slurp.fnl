@@ -15,19 +15,47 @@
 
 (fn id [x] x)
 
-(local innerTextObjects {
+(local textObjects {
+       ; https://github.com/alexmozaidze/tree-sitter-fennel/blob/main/grammar.js
        :fennel {
-               :string (fn [node] (node:named_child 0))
-               :string_content id}})
+               :inner {
+                      :string (fn [node] (node:named_child 0))               
+                      }
+               :outer {
+                      :string_content (fn [node] (node:parent))
+                      :symbol_fragment (fn [node] (node:parent))
+                      }
+               }})
+(comment :symbol_fragment (fn [node] (node:parent)))
 
-(fn internalNode [tab node]
+(fn getTextObjectNode [tab node]
   (let [f (or (?. tab (node:type)) id)]
     (f node)))
 
-(fn selectInnerTextObject [tab]
-  (let [node (ts.get_node_at_cursor 0)
-        inner (internalNode tab node)]
-    (ts.update_selection 0 inner)))
+(fn selectTextObject [tab opts]
+  (let [node (getTextObjectNode tab (ts.get_node_at_cursor 0))]
+    (ts.update_selection 0 node)))
+
+(fn setup [opts]
+  ; Plug maps
+  (vim.keymap.set [:v :o] "<Plug>(slurp-inner-element-to)"
+                  ; TODO: use ftype or something similar to get language table
+                  (fn [] (selectTextObject (. textObjects :fennel :inner)))
+                  {:buffer true})
+  (vim.keymap.set [:v :o]
+                  "<Plug>(slurp-outer-element-to)"
+                  (fn [] (selectTextObject (. textObjects :fennel :outer)))
+                  {:buffer true})
+  ; Default keymaps
+  (vim.keymap.set [:v :o] "<LocalLeader>ie" "<Plug>(slurp-inner-element-to)" {:buffer true})
+  (vim.keymap.set [:v :o] "<LocalLeader>ae" "<Plug>(slurp-outer-element-to)" {:buffer true}))
+
+; TODO: remove me
+(setup {})
+(vim.keymap.set [:n] "<LocalLeader>inf" (fn [] (let [node (ts.get_node_at_cursor)] (vim.print (node:type)))))
+(vim.keymap.set [:n] "<LocalLeader>rng" (fn [] (let [node (ts.get_node_at_cursor 0)
+                                                     range (ts.node_to_lsp_range node)]
+                                                   (vim.print range))))
 
 ; Preserved for buffer mark manipulation reference
 (comment
@@ -56,22 +84,6 @@
        (case (node:type)
          "string_content" (stringTextObject node inner)
          "number" (ts.update_selection 0 node)))))
-
-(fn setup [opts]
-  (vim.keymap.set [:v :o] "<Plug>(slurp-inner-element-to)"
-                  ; TODO: use ftype or something similar to get language table
-                  (fn [] (selectInnerTextObject (. innerTextObjects :fennel)))
-                  {:buffer true})
-  (vim.keymap.set [:v :o] "<LocalLeader>ie" "<Plug>(slurp-inner-element-to)" {:buffer true}))
-
-(comment
-  123
-  (setup {})
-  (vim.keymap.set [:n] "<LocalLeader>inf" (fn [] (let [node (ts.get_node_at_cursor)] (vim.print (node:type)))))
-  (vim.keymap.set [:n] "<LocalLeader>rng" (fn [] (let [node (ts.get_node_at_cursor 0)
-                                                       range (ts.node_to_lsp_range node)]
-                                                   (vim.print range)))))
-(setup {})
 
 ; Module
 {: setup}
