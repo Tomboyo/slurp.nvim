@@ -26,7 +26,7 @@
                                     c1 (+ 2 (. range :start :character))
                                     c2 (- (. range :end :character) 1)]
                                 [l1 c1 l2 c2]))
-
+(local DEFAULT 0)
 (local textObjects {
        ; https://github.com/alexmozaidze/tree-sitter-fennel/blob/main/grammar.js
        :fennel {
@@ -34,19 +34,29 @@
            :inner {
              :string (fn [node] (node:named_child 0))
              :list (fn [node] (listInnerRange node))
+             :sequence (fn [node] (listInnerRange node))
+             :table (fn [node] (listInnerRange node))
              :fn_form (fn [node] (listInnerRange node))
+             :let_form (fn [node] (listInnerRange node))
+             :if_form (fn [node] (listInnerRange node))
+             :local_form (fn [node] (listInnerRange node))
+             :var_form (fn [node] (listInnerRange node))
+             DEFAULT id
              }
            :outer {
              :string_content (fn [node] (node:parent))
              :symbol_fragment (fn [node] (node:parent))
+             DEFAULT id
              }}}
-        })
+         :list {
+           :inner {
+             :stop_nodes [:table :sequence :local_form :fn_form :let_form :list :let_vars]}}})
 
 (fn getTextObjectNode [tab node]
-  (let [f (or (?. tab (node:type)) id)]
+  (let [f (or (?. tab (node:type)) (. tab DEFAULT))]
     (f node)))
 
-(fn selectTextObject [tab opts]
+(fn selectElement [tab]
   (let [node (getTextObjectNode tab (ts.get_node_at_cursor 0))]
     (if (= :table (type node))
         (let [[l1 c1 l2 c2] node]
@@ -55,15 +65,17 @@
           (vim.cmd "normal! gv"))
         (ts.update_selection 0 node))))
 
+
+
 (fn setup [opts]
   ; Plug maps
   (vim.keymap.set [:v :o] "<Plug>(slurp-inner-element-to)"
                   ; TODO: use ftype or something similar to get language table
-                  (fn [] (selectTextObject (. textObjects :fennel :element :inner)))
+                  (fn [] (selectElement (. textObjects :fennel :element :inner)))
                   {:buffer true})
   (vim.keymap.set [:v :o]
                   "<Plug>(slurp-outer-element-to)"
-                  (fn [] (selectTextObject (. textObjects :fennel :element :outer)))
+                  (fn [] (selectElement (. textObjects :fennel :element :outer)))
                   {:buffer true})
   ; Default keymaps
   (vim.keymap.set [:v :o] "<LocalLeader>ie" "<Plug>(slurp-inner-element-to)" {:buffer true})
