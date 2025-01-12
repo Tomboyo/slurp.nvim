@@ -12,21 +12,35 @@
 ; implement a lot of vi-sexp/paredit style functions very accurately for a
 ; variety of languages, and the whole thing can be extended to new languages
 ; just with new lookup tables.
+;
+; Note: If we ask Treesitter for the node under the cursor and the cursor is in
+; a string containing code for a different language, Treesitter will actually
+; select the node of that embedded language. So if we try to outer-select a
+; string, we might end up only selecting something inside it.
 
 (fn id [x] x)
+(fn listInnerRange [node]
+  (let [range (ts.node_to_lsp_range node)
+                                    l1 (+ 1 (. range :start :line))
+                                    l2 (+ 1 (. range :end :line))
+                                    c1 (+ 2 (. range :start :character))
+                                    c2 (- (. range :end :character) 1)]
+                                [l1 c1 l2 c2]))
 
 (local textObjects {
        ; https://github.com/alexmozaidze/tree-sitter-fennel/blob/main/grammar.js
        :fennel {
-               :inner {
-                      :string (fn [node] (node:named_child 0))               
-                      }
-               :outer {
-                      :string_content (fn [node] (node:parent))
-                      :symbol_fragment (fn [node] (node:parent))
-                      }
-               }})
-(comment :symbol_fragment (fn [node] (node:parent)))
+         :element {
+           :inner {
+             :string (fn [node] (node:named_child 0))
+             :list (fn [node] (listInnerRange node))
+             :fn_form (fn [node] (listInnerRange node))
+             }
+           :outer {
+             :string_content (fn [node] (node:parent))
+             :symbol_fragment (fn [node] (node:parent))
+             }}}
+        })
 
 (fn getTextObjectNode [tab node]
   (let [f (or (?. tab (node:type)) id)]
@@ -34,17 +48,22 @@
 
 (fn selectTextObject [tab opts]
   (let [node (getTextObjectNode tab (ts.get_node_at_cursor 0))]
-    (ts.update_selection 0 node)))
+    (if (= :table (type node))
+        (let [[l1 c1 l2 c2] node]
+          (vim.fn.setpos "'<" [0 l1 c1 0])
+          (vim.fn.setpos "'>" [0 l2 c2 0])
+          (vim.cmd "normal! gv"))
+        (ts.update_selection 0 node))))
 
 (fn setup [opts]
   ; Plug maps
   (vim.keymap.set [:v :o] "<Plug>(slurp-inner-element-to)"
                   ; TODO: use ftype or something similar to get language table
-                  (fn [] (selectTextObject (. textObjects :fennel :inner)))
+                  (fn [] (selectTextObject (. textObjects :fennel :element :inner)))
                   {:buffer true})
   (vim.keymap.set [:v :o]
                   "<Plug>(slurp-outer-element-to)"
-                  (fn [] (selectTextObject (. textObjects :fennel :outer)))
+                  (fn [] (selectTextObject (. textObjects :fennel :element :outer)))
                   {:buffer true})
   ; Default keymaps
   (vim.keymap.set [:v :o] "<LocalLeader>ie" "<Plug>(slurp-inner-element-to)" {:buffer true})
