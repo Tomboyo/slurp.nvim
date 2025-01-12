@@ -1,66 +1,77 @@
-(local LPAR "(")
-(local RPAR ")")
+(local ts (require "nvim-treesitter.ts_utils"))
 
-(fn indexOf [xs x]
-  "Return the index of the first occurrence of x in xs or nil if x is not in xs"
-  (var result nil)
-  (var i 0)
-  (while (and (<= i (length xs))
-              (not result))
-    (set i (+ i 1))
-    (when (= x (. xs i))
-      (set result i)))
-  result)
+; Structured text manipulation using treesitter
+;
+; We can take advantage of the s-exp tree created by treesitter to very
+; accurately manipulate the contents of a file in terms of program structure.
+; However, every language has its own grammar with distinct kinds of nodes and
+; distinct names for their nodes. For example, strings in fennel consist of
+; string node containing two anonymous children and a string_content child,
+; wheras the same structure in clojure is just a single string node. Even so,
+; with a small set of functions and a lookup table per-language, we can
+; implement a lot of vi-sexp/paredit style functions very accurately for a
+; variety of languages, and the whole thing can be extended to new languages
+; just with new lookup tables.
 
-(indexOf [1 2 3] 2)
-(indexOf {1 :a 2 :b 3 :c} :b)
+(fn id [x] x)
 
-(fn search [text chars origin offset]
-  (var i origin)
-  (var char (text:sub i i))
-  (var result (when (indexOf chars char) [char i]))
-  (while (and (not result)
-              (<= 1 i (length text)))
-    (set i (+ i offset))
-    (set char (text:sub i i))
-    (when (indexOf chars char)
-      (set result [char i])))
-  (or result ["" -1]))
+(local innerTextObjects {
+       :fennel {
+               :string (fn [node] (node:named_child 0))
+               :string_content id}})
 
-; Finds the index of the LPAR of the s-exp under the cursor, where both the LPAR
-; and RPAR count as being part of the s-exp.
-(fn selectExpression []
-  ;; Line and column are 1-based
-  (local [line col] (vim.api.nvim_win_get_cursor 0))
-  (local text (vim.fn.getline line))
-  (var i (+ 1 col))
-  (var c nil)
-  (var result nil)
-  ; Setting RPAR = -1 causes stack to balance when finding the corresponding
-  ; LPAR: (foo (bar baz|) bang) finds the LPAR containing bar baz. Otherwise the
-  ; impl would return the LPAR before foo, which isn't intuitive.
-  (var stack (if (= (text:sub i i) RPAR)
-                 -1
-                 0))
-  (while (and (not result)
-              (<= 1 i (length text)))
-    (set [c i] (search text [LPAR RPAR] i -1))
-    (print (string.format "c %s i %s stack %s result %s" c i stack result))
-    (match c
-      RPAR (do (set stack (+ 1 stack))
-               (set i (- i 1)))
-      LPAR (if (<= stack 0)
-               (set result i)
-               (do
-                 (set stack (- stack 1))
-                 (set i (- i 1))))))
-  (print (string.format "%s %s,%s: %s" (+ 1 col) line i c)))
+(fn internalNode [tab node]
+  (let [f (or (?. tab (node:type)) id)]
+    (f node)))
 
-(fn setup [config]
-  (vim.keymap.set :n "<Plug>(slurp-expression)" selectExpression))
+(fn selectInnerTextObject [tab]
+  (let [node (ts.get_node_at_cursor 0)
+        inner (internalNode tab node)]
+    (ts.update_selection 0 inner)))
 
-(fn debug []
-  (vim.keymap.set :n "<LocalLeader>se" "<Plug>(slurp-expression)"))
+; Preserved for buffer mark manipulation reference
+(comment
+   (fn stringTextObject [node inner]
+     "Set the range marks for a string node. If inner is true, quotes or other
+     delimiters are excluded."
+     (let [range (ts.node_to_lsp_range node)
+                 {:start {:line sline :character sc} :end {:line eline :character ec}} range
+                 sl (+ 1 sline)
+                 el (+ 1 sline)
+                 line (vim.fn.getline sl)
+                 sym (line:sub sc sc)
+                 sc (if inner (+ 1 sc) sc)]
+       (vim.print { :sl sl :el el :sc sc :ec ec :sym sym})
+       (vim.fn.setpos "'<" [0 sl sc 0])
+       (vim.fn.setpos "'>" [0 el ec 0])
+       (vim.cmd "normal! gv")))
+
+   (fn elementTextObject [inner]
+     (let [node (ts.get_node_at_cursor 0)
+                range (ts.node_to_lsp_range node)
+                cursorBackup (vim.fn.getpos :.)
+                {:start {:line sline :character schar} :end {:line eline :character echar}} range]
+       (vim.print (node:type))
+       (vim.print range)
+       (case (node:type)
+         "string_content" (stringTextObject node inner)
+         "number" (ts.update_selection 0 node)))))
+
+(fn setup [opts]
+  (vim.keymap.set [:v :o] "<Plug>(slurp-inner-element-to)"
+                  ; TODO: use ftype or something similar to get language table
+                  (fn [] (selectInnerTextObject (. innerTextObjects :fennel)))
+                  {:buffer true})
+  (vim.keymap.set [:v :o] "<LocalLeader>ie" "<Plug>(slurp-inner-element-to)" {:buffer true}))
+
+(comment
+  123
+  (setup {})
+  (vim.keymap.set [:n] "<LocalLeader>inf" (fn [] (let [node (ts.get_node_at_cursor)] (vim.print (node:type)))))
+  (vim.keymap.set [:n] "<LocalLeader>rng" (fn [] (let [node (ts.get_node_at_cursor 0)
+                                                       range (ts.node_to_lsp_range node)]
+                                                   (vim.print range)))))
+(setup {})
 
 ; Module
 {: setup}
