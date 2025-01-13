@@ -21,11 +21,11 @@
 (fn id [x] x)
 (fn listInnerRange [node]
   (let [range (ts.node_to_lsp_range node)
-                                    l1 (+ 1 (. range :start :line))
-                                    l2 (+ 1 (. range :end :line))
-                                    c1 (+ 2 (. range :start :character))
-                                    c2 (- (. range :end :character) 1)]
-                                [l1 c1 l2 c2]))
+        l1 (+ 1 (. range :start :line))
+        l2 (+ 1 (. range :end :line))
+        c1 (+ 2 (. range :start :character))
+        c2 (- (. range :end :character) 1)]
+    [l1 c1 l2 c2]))
 
 (local textObjects {
        ; https://github.com/alexmozaidze/tree-sitter-fennel/blob/main/grammar.js
@@ -34,16 +34,16 @@
            :inner {
              :nodes {
                :string (fn [node] (node:named_child 0))
-               :list (fn [node] (listInnerRange node))
-               :sequence (fn [node] (listInnerRange node))
-               :table (fn [node] (listInnerRange node))
-               :fn_form (fn [node] (listInnerRange node))
-               :let_form (fn [node] (listInnerRange node))
-               :if_form (fn [node] (listInnerRange node))
-               :local_form (fn [node] (listInnerRange node))
-               :var_form (fn [node] (listInnerRange node))
-               :let_vars (fn [node] (listInnerRange node))
-               :sequence_arguments (fn [node] (listInnerRange node))}
+               :list listInnerRange
+               :sequence listInnerRange
+               :table listInnerRange
+               :fn_form listInnerRange
+               :let_form listInnerRange
+               :if_form listInnerRange
+               :local_form listInnerRange
+               :var_form listInnerRange
+               :let_vars listInnerRange
+               :sequence_arguments listInnerRange}
              :default id}
            :outer {
              :nodes {

@@ -15,58 +15,28 @@ local function _1_(node)
   return node:named_child(0)
 end
 local function _2_(node)
-  return listInnerRange(node)
+  return node:parent()
 end
 local function _3_(node)
-  return listInnerRange(node)
-end
-local function _4_(node)
-  return listInnerRange(node)
-end
-local function _5_(node)
-  return listInnerRange(node)
-end
-local function _6_(node)
-  return listInnerRange(node)
-end
-local function _7_(node)
-  return listInnerRange(node)
-end
-local function _8_(node)
-  return listInnerRange(node)
-end
-local function _9_(node)
-  return listInnerRange(node)
-end
-local function _10_(node)
-  return listInnerRange(node)
-end
-local function _11_(node)
-  return listInnerRange(node)
-end
-local function _12_(node)
   return node:parent()
 end
-local function _13_(node)
-  return node:parent()
-end
-textObjects = {fennel = {element = {inner = {nodes = {string = _1_, list = _2_, sequence = _3_, table = _4_, fn_form = _5_, let_form = _6_, if_form = _7_, local_form = _8_, var_form = _9_, let_vars = _10_, sequence_arguments = _11_}, default = id}, outer = {nodes = {string_content = _12_, symbol_fragment = _13_}, default = id}}, list = {stopNodes = {"table", "sequence", "local_form", "fn_form", "let_form", "list", "let_vars", "sequence_arguments"}}}}
+textObjects = {fennel = {element = {inner = {nodes = {string = _1_, list = listInnerRange, sequence = listInnerRange, table = listInnerRange, fn_form = listInnerRange, let_form = listInnerRange, if_form = listInnerRange, local_form = listInnerRange, var_form = listInnerRange, let_vars = listInnerRange, sequence_arguments = listInnerRange}, default = id}, outer = {nodes = {string_content = _2_, symbol_fragment = _3_}, default = id}}, list = {stopNodes = {"table", "sequence", "local_form", "fn_form", "let_form", "list", "let_vars", "sequence_arguments"}}}}
 local function getTextObjectNode(tab, node)
   local f
-  local _15_
+  local _5_
   do
-    local t_14_ = tab
-    if (nil ~= t_14_) then
-      t_14_ = t_14_.nodes
+    local t_4_ = tab
+    if (nil ~= t_4_) then
+      t_4_ = t_4_.nodes
     else
     end
-    if (nil ~= t_14_) then
-      t_14_ = t_14_[node:type()]
+    if (nil ~= t_4_) then
+      t_4_ = t_4_[node:type()]
     else
     end
-    _15_ = t_14_
+    _5_ = t_4_
   end
-  f = (_15_ or tab.default)
+  f = (_5_ or tab.default)
   return f(node)
 end
 local function selectElement(tab, node)
@@ -112,36 +82,36 @@ local function selectListCmd(listTab, elTab)
   return selectElement(elTab, node)
 end
 local function setup(opts)
-  local function _21_()
+  local function _11_()
     return selectElementCmd(textObjects.fennel.element.inner)
   end
-  vim.keymap.set({"v", "o"}, "<Plug>(slurp-inner-element-to)", _21_, {})
-  local function _22_()
+  vim.keymap.set({"v", "o"}, "<Plug>(slurp-inner-element-to)", _11_, {})
+  local function _12_()
     return selectElementCmd(textObjects.fennel.element.outer)
   end
-  vim.keymap.set({"v", "o"}, "<Plug>(slurp-outer-element-to)", _22_, {})
-  local function _23_()
+  vim.keymap.set({"v", "o"}, "<Plug>(slurp-outer-element-to)", _12_, {})
+  local function _13_()
     return selectListCmd(textObjects.fennel.list, textObjects.fennel.element.inner)
   end
-  vim.keymap.set({"v", "o"}, "<Plug>(slurp-inner-list-to)", _23_, {})
-  local function _24_()
+  vim.keymap.set({"v", "o"}, "<Plug>(slurp-inner-list-to)", _13_, {})
+  local function _14_()
     return selectListCmd(textObjects.fennel.list, textObjects.fennel.element.outer)
   end
-  vim.keymap.set({"v", "o"}, "<Plug>(slurp-outer-list-to)", _24_, {})
+  vim.keymap.set({"v", "o"}, "<Plug>(slurp-outer-list-to)", _14_, {})
   vim.keymap.set({"v", "o"}, "<LocalLeader>ie", "<Plug>(slurp-inner-element-to)")
   vim.keymap.set({"v", "o"}, "<LocalLeader>ae", "<Plug>(slurp-outer-element-to)")
   vim.keymap.set({"v", "o"}, "<LocalLeader>il", "<Plug>(slurp-inner-list-to)")
   vim.keymap.set({"v", "o"}, "<LocalLeader>al", "<Plug>(slurp-outer-list-to)")
-  local function _25_()
+  local function _15_()
     local node = ts.get_node_at_cursor()
     return vim.print(node:type())
   end
-  vim.keymap.set({"n"}, "<LocalLeader>inf", _25_)
-  local function _26_()
+  vim.keymap.set({"n"}, "<LocalLeader>inf", _15_)
+  local function _16_()
     local node = ts.get_node_at_cursor(0)
     local range = ts.node_to_lsp_range(node)
     return vim.print(range)
   end
-  return vim.keymap.set({"n"}, "<LocalLeader>rng", _26_)
+  return vim.keymap.set({"n"}, "<LocalLeader>rng", _16_)
 end
 return {setup = setup}
