@@ -19,6 +19,7 @@
 ; string, we might end up only selecting something inside it.
 
 (fn id [x] x)
+
 (fn listInnerRange [node]
   (let [range (ts.node_to_lsp_range node)
         l1 (+ 1 (. range :start :line))
@@ -67,10 +68,6 @@
           (vim.cmd "normal! gv"))
         (ts.update_selection 0 node))))
 
-; TODO: multi-body functions?
-(fn selectElementCmd [tab]
-  (selectElement tab (ts.get_node_at_cursor 0)))
-
 (fn listContains [t e]
   (accumulate [bool false i v (ipairs t) &until bool]
     (or (= e v) bool)))
@@ -83,6 +80,11 @@
         (if p
             (getStopNode p stopList)
             n))))
+
+;; Api
+
+(fn selectElementCmd [tab]
+  (selectElement tab (ts.get_node_at_cursor 0)))
 
 (fn selectListCmd [listTab elTab]
   (let [start (ts.get_node_at_cursor 0)
@@ -115,15 +117,14 @@
   (vim.keymap.set [:v :o] "<LocalLeader>ae" "<Plug>(slurp-outer-element-to)")
   (vim.keymap.set [:v :o] "<LocalLeader>il" "<Plug>(slurp-inner-list-to)")
   (vim.keymap.set [:v :o] "<LocalLeader>al" "<Plug>(slurp-outer-list-to)")
+  
   ; TODO: remove me (debugging keybinds)
+  (vim.keymap.set [:n] "<LocalLeader>bld" (fn [] (vim.cmd "!make clean build")
+                                                 (vim.cmd ":luafile lua/**.lua")))
   (vim.keymap.set [:n] "<LocalLeader>inf" (fn [] (let [node (ts.get_node_at_cursor)] (vim.print (node:type)))))
   (vim.keymap.set [:n] "<LocalLeader>rng" (fn [] (let [node (ts.get_node_at_cursor 0)
                                                        range (ts.node_to_lsp_range node)]
-                                                   (vim.print range))))
-  )
-
-; TODO: remove me
-; (setup {})
+                                                   (vim.print range)))))
 
 ; Module
 {: setup}

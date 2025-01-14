@@ -53,9 +53,6 @@ local function selectElement(tab, node)
     return ts.update_selection(0, node0)
   end
 end
-local function selectElementCmd(tab)
-  return selectElement(tab, ts.get_node_at_cursor(0))
-end
 local function listContains(t, e)
   local bool = false
   for i, v in ipairs(t) do
@@ -75,6 +72,9 @@ local function getStopNode(n, stopList)
       return n
     end
   end
+end
+local function selectElementCmd(tab)
+  return selectElement(tab, ts.get_node_at_cursor(0))
 end
 local function selectListCmd(listTab, elTab)
   local start = ts.get_node_at_cursor(0)
@@ -103,15 +103,20 @@ local function setup(opts)
   vim.keymap.set({"v", "o"}, "<LocalLeader>il", "<Plug>(slurp-inner-list-to)")
   vim.keymap.set({"v", "o"}, "<LocalLeader>al", "<Plug>(slurp-outer-list-to)")
   local function _15_()
+    vim.cmd("!make clean build")
+    return vim.cmd(":luafile lua/**.lua")
+  end
+  vim.keymap.set({"n"}, "<LocalLeader>bld", _15_)
+  local function _16_()
     local node = ts.get_node_at_cursor()
     return vim.print(node:type())
   end
-  vim.keymap.set({"n"}, "<LocalLeader>inf", _15_)
-  local function _16_()
+  vim.keymap.set({"n"}, "<LocalLeader>inf", _16_)
+  local function _17_()
     local node = ts.get_node_at_cursor(0)
     local range = ts.node_to_lsp_range(node)
     return vim.print(range)
   end
-  return vim.keymap.set({"n"}, "<LocalLeader>rng", _16_)
+  return vim.keymap.set({"n"}, "<LocalLeader>rng", _17_)
 end
 return {setup = setup}
