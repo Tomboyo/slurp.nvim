@@ -44,7 +44,8 @@
                :local_form listInnerRange
                :var_form listInnerRange
                :let_vars listInnerRange
-               :sequence_arguments listInnerRange}
+               :sequence_arguments listInnerRange
+               :symbol_fragment (fn [node] (node:parent))}
              :default id}
            :outer {
              :nodes {
@@ -52,8 +53,8 @@
                :symbol_fragment (fn [node] (node:parent))}
              :default id}}
          :list {
-           :stopNodes [:table :sequence :local_form :fn_form :let_form :list
-                       :let_vars :sequence_arguments]}}})
+           :stopNodes [:table :table_binding :sequence :local_form :fn_form :let_form :list
+                       :let_vars :sequence_arguments :set_form :if_form]}}})
 
 (fn getTextObjectNode [tab node]
   (let [f (or (?. tab :nodes (node:type)) (. tab :default))]
@@ -91,6 +92,40 @@
         node (getStopNode start (. listTab :stopNodes))]
     (selectElement elTab node)))
 
+(fn nextNode [node]
+  (let [s (node:next_sibling)]
+  (if s
+      s
+      (nextNode (node:parent)))))
+
+(fn tsNodeRange [node offset]
+  (let [offset (or offset [1 0])
+        [r c] offset
+        {:start {:line l1 :character c1}
+         :end   {:line l2 :character c2}} (ts.node_to_lsp_range node)]
+    [(+ r l1) (+ c c1) (+ r l2) (+ c c2)]))
+
+; TODO: list:named_child causes this to step into children (DFS). To support a
+; sibling-first strategy (BFS), we need to lift that call out. Basically, this
+; should be parameterised with a nextNode strategy.
+; TODO: named_child can return null :P
+; TODO: funky on bindings like in tsNodeRange
+(fn elementMotionStart [listTab startingPos el max]
+  (let [max (or max 10)
+        ; [1, 1] offset
+        startingPos (or startingPos (vim.fn.getpos "."))
+        [_ sLine sChar _] startingPos
+        ; init el to the first element in the parent list
+        el (or el (let [list (getStopNode (ts.get_node_at_cursor 0) (. listTab :stopNodes))]
+                    (list:named_child 0)))
+        [eSLine eSChar _ _] (tsNodeRange el [1 1])]
+    (if (or (and (= sLine eSLine) (< sChar eSChar))
+            (< sLine eSLine))
+          (ts.goto_node el)
+          (if (> max 1)
+              (elementMotionStart listTab startingPos (nextNode el) (- max 1))
+              (vim.print "Could not find next element within 10 iterations")))))
+
 (fn setup [opts]
   ; Plug maps
   (vim.keymap.set [:v :o] "<Plug>(slurp-inner-element-to)"
@@ -111,20 +146,26 @@
                   (fn [] (selectListCmd (. textObjects :fennel :list)
                                         (. textObjects :fennel :element :outer)))
                   {})
+(vim.keymap.set [:n :v :o]
+                "<Plug>(slurp-motion-element-forward)"
+                (fn [] (elementMotionStart (. textObjects :fennel :list)))
+                {})
 
   ; Default keymaps
   (vim.keymap.set [:v :o] "<LocalLeader>ie" "<Plug>(slurp-inner-element-to)")
   (vim.keymap.set [:v :o] "<LocalLeader>ae" "<Plug>(slurp-outer-element-to)")
   (vim.keymap.set [:v :o] "<LocalLeader>il" "<Plug>(slurp-inner-list-to)")
   (vim.keymap.set [:v :o] "<LocalLeader>al" "<Plug>(slurp-outer-list-to)")
+  (vim.keymap.set [:n :v :o] "w" "<Plug>(slurp-motion-element-forward)")
   
+
   ; TODO: remove me (debugging keybinds)
-  (vim.keymap.set [:n] "<LocalLeader>bld" (fn [] (vim.cmd "!make clean build")
-                                                 (vim.cmd ":luafile lua/**.lua")))
-  (vim.keymap.set [:n] "<LocalLeader>inf" (fn [] (let [node (ts.get_node_at_cursor)] (vim.print (node:type)))))
-  (vim.keymap.set [:n] "<LocalLeader>rng" (fn [] (let [node (ts.get_node_at_cursor 0)
-                                                       range (ts.node_to_lsp_range node)]
-                                                   (vim.print range)))))
+  (vim.keymap.set [:n] "<LocalLeader>inf"
+                  (fn [] (let [node (ts.get_node_at_cursor)
+                               range (tsNodeRange node [1 1])]
+                           (vim.print [(vim.fn.getpos ".") (node:type) range])))))
+
+(setup)
 
 ; Module
 {: setup}
