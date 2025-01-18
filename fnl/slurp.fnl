@@ -109,6 +109,23 @@
         node (vim.treesitter.get_node)]
     (ts.goto_node (tree.nextLexicalOuterNode node line col))))
 
+; Todo: If we slurp "... :foo) :bar ...", ew end up with "... :foo:bar )"
+; because the whitespace isn't also moved. Need a way to ask treesitter for the
+; whitespace between the two nodes and shift it. (i.e. all text in the buffer
+; between the start of one and the end of the following node, since we don't
+; know what this language uses for whitespace. Take clojure, which uses commas
+; as whitespace; naively inserting spaces would change the look of the code.)
+; Todo: if the node has no sibling, go up to its parent and see if it can slurp
+(fn slurpForward [ldelim rdelim]
+  (let [[node _ close] (tree.firstSurroundingNode ldelim rdelim)
+        next (and node (node:next_named_sibling))]
+    (when next
+      (let [(_ _ sl sc) (vim.treesitter.get_node_range node)
+            (_ _ el ec) (vim.treesitter.get_node_range next)]
+        (ts.swap_nodes close [sl sc el ec] 0)))))
+
+(comment (:cats (:dogs :skunks) :birds :horses))
+
 (fn setup [opts]
   ; Plug maps
   (vim.keymap.set [:v :o] "<Plug>(slurp-inner-element-to)"
@@ -137,6 +154,9 @@
                 "<Plug>(slurp-outer-element-forward)"
                 (fn [] (outerElementForward))
                 {})
+  (vim.keymap.set [:n :v :o]
+                  "<Plug>(slurp-slurp-close-paren-forward)"
+                  (fn [] (slurpForward "(" ")")))
 
   ; Default keymaps
   (vim.keymap.set [:v :o] "<LocalLeader>ie" "<Plug>(slurp-inner-element-to)")
@@ -145,6 +165,9 @@
   (vim.keymap.set [:v :o] "<LocalLeader>al" "<Plug>(slurp-outer-list-to)")
   (vim.keymap.set [:n :v :o] "w" "<Plug>(slurp-inner-element-forward)")
   (vim.keymap.set [:n :v :o] "W" "<Plug>(slurp-outer-element-forward)")
+  (vim.keymap.set [:n :v :o]
+                  "<LocalLeader>)"
+                  "<Plug>(slurp-slurp-close-paren-forward)")
   
 
   ; TODO: remove me (debugging keybinds)

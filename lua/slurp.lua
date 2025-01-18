@@ -115,44 +115,64 @@ local function outerElementForward()
   local node = vim.treesitter.get_node()
   return ts.goto_node(tree.nextLexicalOuterNode(node, line, col))
 end
+local function slurpForward(ldelim, rdelim)
+  local _let_17_ = tree.firstSurroundingNode(ldelim, rdelim)
+  local node = _let_17_[1]
+  local _ = _let_17_[2]
+  local close = _let_17_[3]
+  local next = (node and node:next_named_sibling())
+  if next then
+    local _0, _1, sl, sc = vim.treesitter.get_node_range(node)
+    local _2, _3, el, ec = vim.treesitter.get_node_range(next)
+    return ts.swap_nodes(close, {sl, sc, el, ec}, 0)
+  else
+    return nil
+  end
+end
+--[[ ("cats" ("dogs" "skunks") "birds" "horses") ]]
 local function setup(opts)
-  local function _17_()
+  local function _19_()
     return selectElementCmd(textObjects.fennel.element.inner)
   end
-  vim.keymap.set({"v", "o"}, "<Plug>(slurp-inner-element-to)", _17_, {})
-  local function _18_()
+  vim.keymap.set({"v", "o"}, "<Plug>(slurp-inner-element-to)", _19_, {})
+  local function _20_()
     return selectElementCmd(textObjects.fennel.element.outer)
   end
-  vim.keymap.set({"v", "o"}, "<Plug>(slurp-outer-element-to)", _18_, {})
-  local function _19_()
+  vim.keymap.set({"v", "o"}, "<Plug>(slurp-outer-element-to)", _20_, {})
+  local function _21_()
     return selectListCmd(textObjects.fennel.list, textObjects.fennel.element.inner)
   end
-  vim.keymap.set({"v", "o"}, "<Plug>(slurp-inner-list-to)", _19_, {})
-  local function _20_()
+  vim.keymap.set({"v", "o"}, "<Plug>(slurp-inner-list-to)", _21_, {})
+  local function _22_()
     return selectListCmd(textObjects.fennel.list, textObjects.fennel.element.outer)
   end
-  vim.keymap.set({"v", "o"}, "<Plug>(slurp-outer-list-to)", _20_, {})
-  local function _21_()
+  vim.keymap.set({"v", "o"}, "<Plug>(slurp-outer-list-to)", _22_, {})
+  local function _23_()
     return innerElementForward()
   end
-  vim.keymap.set({"n", "v", "o"}, "<Plug>(slurp-inner-element-forward)", _21_, {})
-  local function _22_()
+  vim.keymap.set({"n", "v", "o"}, "<Plug>(slurp-inner-element-forward)", _23_, {})
+  local function _24_()
     return outerElementForward()
   end
-  vim.keymap.set({"n", "v", "o"}, "<Plug>(slurp-outer-element-forward)", _22_, {})
+  vim.keymap.set({"n", "v", "o"}, "<Plug>(slurp-outer-element-forward)", _24_, {})
+  local function _25_()
+    return slurpForward("(", ")")
+  end
+  vim.keymap.set({"n", "v", "o"}, "<Plug>(slurp-slurp-close-paren-forward)", _25_)
   vim.keymap.set({"v", "o"}, "<LocalLeader>ie", "<Plug>(slurp-inner-element-to)")
   vim.keymap.set({"v", "o"}, "<LocalLeader>ae", "<Plug>(slurp-outer-element-to)")
   vim.keymap.set({"v", "o"}, "<LocalLeader>il", "<Plug>(slurp-inner-list-to)")
   vim.keymap.set({"v", "o"}, "<LocalLeader>al", "<Plug>(slurp-outer-list-to)")
   vim.keymap.set({"n", "v", "o"}, "w", "<Plug>(slurp-inner-element-forward)")
   vim.keymap.set({"n", "v", "o"}, "W", "<Plug>(slurp-outer-element-forward)")
-  local function _23_()
+  vim.keymap.set({"n", "v", "o"}, "<LocalLeader>)", "<Plug>(slurp-slurp-close-paren-forward)")
+  local function _26_()
     vim.cmd("!make build")
     package.loaded.tree = nil
     return nil
   end
-  vim.keymap.set({"n"}, "<LocalLeader>bld", _23_, {})
-  local function _24_()
+  vim.keymap.set({"n"}, "<LocalLeader>bld", _26_, {})
+  local function _27_()
     local node = ts.get_node_at_cursor()
     local range = tsNodeRange(node, {1, 1})
     local children
@@ -160,21 +180,21 @@ local function setup(opts)
       local acc = {}
       for i = 0, node:child_count() do
         local n = node:child(i)
-        local function _25_()
+        local function _28_()
           if n then
             return n:type()
           else
             return nil
           end
         end
-        table.insert(acc, _25_())
+        table.insert(acc, _28_())
         acc = acc
       end
       children = acc
     end
     return vim.print({"node:", node:type(), "sexp:", children})
   end
-  return vim.keymap.set({"n"}, "<LocalLeader>inf", _24_)
+  return vim.keymap.set({"n"}, "<LocalLeader>inf", _27_)
 end
 setup()
 return {setup = setup}

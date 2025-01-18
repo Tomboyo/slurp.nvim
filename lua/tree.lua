@@ -48,7 +48,6 @@ m.nextLexicalInnerNode = function(node, line, char)
   end
 end
 m.nextLexicalOuterNode = function(node, line, char)
-  vim.print("test")
   local _let_9_ = m.range(node, {1, 1})
   local l = _let_9_[1]
   local c = _let_9_[2]
@@ -58,6 +57,25 @@ m.nextLexicalOuterNode = function(node, line, char)
     return m.nextLexicalOuterNode(nextNamedIbling(node), line, char)
   else
     return node
+  end
+end
+m.firstSurroundingNode = function(ldelim, rdelim, node)
+  local node0 = (node or vim.treesitter.get_node())
+  local len = node0:child_count()
+  local function _11_()
+    if (len >= 2) then
+      return {node0:child(0), node0:child((len - 1))}
+    else
+      return {nil, nil}
+    end
+  end
+  local _let_12_ = _11_()
+  local open = _let_12_[1]
+  local close = _let_12_[2]
+  if (open and close and (ldelim == vim.treesitter.get_node_text(open, 0)) and (rdelim == vim.treesitter.get_node_text(close, 0))) then
+    return {node0, open, close}
+  else
+    return m.firstSurroundingNode(ldelim, rdelim, nextNamedParent(node0))
   end
 end
 vim.print("required tree")

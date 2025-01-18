@@ -35,12 +35,24 @@
         node)))
 
 (fn m.nextLexicalOuterNode [node line char]
-  (vim.print "test")
   (let [[l c _ _] (m.range node [1 1])]
     (if (or (and (= l line) (<= c char))
             (and (< l line)))
         (m.nextLexicalOuterNode (nextNamedIbling node) line char)
         node)))
+
+(fn m.firstSurroundingNode [ldelim rdelim node]
+  (let [node (or node (vim.treesitter.get_node))
+        len (node:child_count)
+        [open close] (if (>= len 2)
+                         [(node:child 0) (node:child (- len 1))]
+                         [nil nil])]
+    (if (and open
+             close
+             (= ldelim (vim.treesitter.get_node_text open 0))
+             (= rdelim (vim.treesitter.get_node_text close 0)))
+        [node open close]
+        (m.firstSurroundingNode ldelim rdelim (nextNamedParent node)))))
 
 (vim.print "required tree")
 
