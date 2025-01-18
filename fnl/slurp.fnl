@@ -1,4 +1,10 @@
+;(comment
+;  ; Eval me to get (require :tree) and company to work
+;  (let [f (require :fennel)]
+;    (f.install)))
+
 (local ts (require "nvim-treesitter.ts_utils"))
+(local tree (require :tree))
 
 ; Structured text manipulation using treesitter
 ;
@@ -92,12 +98,6 @@
         node (getStopNode start (. listTab :stopNodes))]
     (selectElement elTab node)))
 
-(fn nextNode [node]
-  (let [s (node:next_sibling)]
-  (if s
-      s
-      (nextNode (node:parent)))))
-
 (fn tsNodeRange [node offset]
   (let [offset (or offset [1 0])
         [r c] offset
@@ -105,26 +105,9 @@
          :end   {:line l2 :character c2}} (ts.node_to_lsp_range node)]
     [(+ r l1) (+ c c1) (+ r l2) (+ c c2)]))
 
-; TODO: list:named_child causes this to step into children (DFS). To support a
-; sibling-first strategy (BFS), we need to lift that call out. Basically, this
-; should be parameterised with a nextNode strategy.
-; TODO: named_child can return null :P
-; TODO: funky on bindings like in tsNodeRange
-(fn elementMotionStart [listTab startingPos el max]
-  (let [max (or max 10)
-        ; [1, 1] offset
-        startingPos (or startingPos (vim.fn.getpos "."))
-        [_ sLine sChar _] startingPos
-        ; init el to the first element in the parent list
-        el (or el (let [list (getStopNode (ts.get_node_at_cursor 0) (. listTab :stopNodes))]
-                    (list:named_child 0)))
-        [eSLine eSChar _ _] (tsNodeRange el [1 1])]
-    (if (or (and (= sLine eSLine) (< sChar eSChar))
-            (< sLine eSLine))
-          (ts.goto_node el)
-          (if (> max 1)
-              (elementMotionStart listTab startingPos (nextNode el) (- max 1))
-              (vim.print "Could not find next element within 10 iterations")))))
+(fn depthFirstForward []
+  (let [[_ line col _] (vim.fn.getpos ".")]
+    (ts.goto_node (tree.nextLexicalNode (ts.get_node_at_cursor) line col))))
 
 (fn setup [opts]
   ; Plug maps
@@ -147,8 +130,8 @@
                                         (. textObjects :fennel :element :outer)))
                   {})
 (vim.keymap.set [:n :v :o]
-                "<Plug>(slurp-motion-element-forward)"
-                (fn [] (elementMotionStart (. textObjects :fennel :list)))
+                "<Plug>(slurp-depth-first-forward)"
+                (fn [] (depthFirstForward))
                 {})
 
   ; Default keymaps
@@ -156,14 +139,21 @@
   (vim.keymap.set [:v :o] "<LocalLeader>ae" "<Plug>(slurp-outer-element-to)")
   (vim.keymap.set [:v :o] "<LocalLeader>il" "<Plug>(slurp-inner-list-to)")
   (vim.keymap.set [:v :o] "<LocalLeader>al" "<Plug>(slurp-outer-list-to)")
-  (vim.keymap.set [:n :v :o] "w" "<Plug>(slurp-motion-element-forward)")
+  (vim.keymap.set [:n :v :o] "w" "<Plug>(slurp-depth-first-forward)")
   
 
   ; TODO: remove me (debugging keybinds)
   (vim.keymap.set [:n] "<LocalLeader>inf"
                   (fn [] (let [node (ts.get_node_at_cursor)
-                               range (tsNodeRange node [1 1])]
-                           (vim.print [(vim.fn.getpos ".") (node:type) range])))))
+                               range (tsNodeRange node [1 1])
+                               children (faccumulate [acc [] i 0 (node:child_count)]
+                                          (let [n (node:child i)]
+                                            (table.insert acc (if n (n:type)))
+                                            acc))]
+                           (vim.print [;"cursor:" (vim.fn.getpos ".")
+                                       "node:" (node:type)
+                                       ;"range:" range
+                                       "sexp:" children])))))
 
 (setup)
 

@@ -1,4 +1,5 @@
 local ts = require("nvim-treesitter.ts_utils")
+local tree = require("tree")
 local function id(x)
   return x
 end
@@ -84,88 +85,76 @@ local function selectListCmd(listTab, elTab)
   local node = getStopNode(start, listTab.stopNodes)
   return selectElement(elTab, node)
 end
-local function nextNode(node)
-  local s = node:next_sibling()
-  if s then
-    return s
-  else
-    return nextNode(node:parent())
-  end
-end
 local function tsNodeRange(node, offset)
   local offset0 = (offset or {1, 0})
   local r = offset0[1]
   local c = offset0[2]
-  local _let_13_ = ts.node_to_lsp_range(node)
-  local _let_14_ = _let_13_["start"]
-  local l1 = _let_14_["line"]
-  local c1 = _let_14_["character"]
-  local _let_15_ = _let_13_["end"]
-  local l2 = _let_15_["line"]
-  local c2 = _let_15_["character"]
+  local _let_12_ = ts.node_to_lsp_range(node)
+  local _let_13_ = _let_12_["start"]
+  local l1 = _let_13_["line"]
+  local c1 = _let_13_["character"]
+  local _let_14_ = _let_12_["end"]
+  local l2 = _let_14_["line"]
+  local c2 = _let_14_["character"]
   return {(r + l1), (c + c1), (r + l2), (c + c2)}
 end
-local function elementMotionStart(listTab, startingPos, el, max)
-  local max0 = (max or 10)
-  local startingPos0 = (startingPos or vim.fn.getpos("."))
-  local _ = startingPos0[1]
-  local sLine = startingPos0[2]
-  local sChar = startingPos0[3]
-  local _0 = startingPos0[4]
-  local el0
-  local or_16_ = el
-  if not or_16_ then
-    local list = getStopNode(ts.get_node_at_cursor(0), listTab.stopNodes)
-    or_16_ = list:named_child(0)
-  end
-  el0 = or_16_
-  local _let_18_ = tsNodeRange(el0, {1, 1})
-  local eSLine = _let_18_[1]
-  local eSChar = _let_18_[2]
-  local _1 = _let_18_[3]
-  local _2 = _let_18_[4]
-  if (((sLine == eSLine) and (sChar < eSChar)) or (sLine < eSLine)) then
-    return ts.goto_node(el0)
-  else
-    if (max0 > 1) then
-      return elementMotionStart(listTab, startingPos0, nextNode(el0), (max0 - 1))
-    else
-      return vim.print("Could not find next element within 10 iterations")
-    end
-  end
+local function depthFirstForward()
+  local _let_15_ = vim.fn.getpos(".")
+  local _ = _let_15_[1]
+  local line = _let_15_[2]
+  local col = _let_15_[3]
+  local _0 = _let_15_[4]
+  return ts.goto_node(tree.nextLexicalNode(ts.get_node_at_cursor(), line, col))
 end
 local function setup(opts)
-  local function _21_()
+  local function _16_()
     return selectElementCmd(textObjects.fennel.element.inner)
   end
-  vim.keymap.set({"v", "o"}, "<Plug>(slurp-inner-element-to)", _21_, {})
-  local function _22_()
+  vim.keymap.set({"v", "o"}, "<Plug>(slurp-inner-element-to)", _16_, {})
+  local function _17_()
     return selectElementCmd(textObjects.fennel.element.outer)
   end
-  vim.keymap.set({"v", "o"}, "<Plug>(slurp-outer-element-to)", _22_, {})
-  local function _23_()
+  vim.keymap.set({"v", "o"}, "<Plug>(slurp-outer-element-to)", _17_, {})
+  local function _18_()
     return selectListCmd(textObjects.fennel.list, textObjects.fennel.element.inner)
   end
-  vim.keymap.set({"v", "o"}, "<Plug>(slurp-inner-list-to)", _23_, {})
-  local function _24_()
+  vim.keymap.set({"v", "o"}, "<Plug>(slurp-inner-list-to)", _18_, {})
+  local function _19_()
     return selectListCmd(textObjects.fennel.list, textObjects.fennel.element.outer)
   end
-  vim.keymap.set({"v", "o"}, "<Plug>(slurp-outer-list-to)", _24_, {})
-  local function _25_()
-    return elementMotionStart(textObjects.fennel.list)
+  vim.keymap.set({"v", "o"}, "<Plug>(slurp-outer-list-to)", _19_, {})
+  local function _20_()
+    return depthFirstForward()
   end
-  vim.keymap.set({"n", "v", "o"}, "<Plug>(slurp-motion-element-forward)", _25_, {})
+  vim.keymap.set({"n", "v", "o"}, "<Plug>(slurp-depth-first-forward)", _20_, {})
   vim.keymap.set({"v", "o"}, "<LocalLeader>ie", "<Plug>(slurp-inner-element-to)")
   vim.keymap.set({"v", "o"}, "<LocalLeader>ae", "<Plug>(slurp-outer-element-to)")
   vim.keymap.set({"v", "o"}, "<LocalLeader>il", "<Plug>(slurp-inner-list-to)")
   vim.keymap.set({"v", "o"}, "<LocalLeader>al", "<Plug>(slurp-outer-list-to)")
-  vim.keymap.set({"n", "v", "o"}, "w", "<Plug>(slurp-motion-element-forward)")
-  local function _26_()
+  vim.keymap.set({"n", "v", "o"}, "w", "<Plug>(slurp-depth-first-forward)")
+  local function _21_()
     local node = ts.get_node_at_cursor()
     local range = tsNodeRange(node, {1, 1})
-    return vim.print({vim.fn.getpos("."), node:type(), range})
+    local children
+    do
+      local acc = {}
+      for i = 0, node:child_count() do
+        local n = node:child(i)
+        local function _22_()
+          if n then
+            return n:type()
+          else
+            return nil
+          end
+        end
+        table.insert(acc, _22_())
+        acc = acc
+      end
+      children = acc
+    end
+    return vim.print({"node:", node:type(), "sexp:", children})
   end
-  return vim.keymap.set({"n"}, "<LocalLeader>inf", _26_)
+  return vim.keymap.set({"n"}, "<LocalLeader>inf", _21_)
 end
 setup()
 return {setup = setup}
