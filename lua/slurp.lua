@@ -104,15 +104,16 @@ local function innerElementForward()
   local line = _let_15_[2]
   local col = _let_15_[3]
   local _0 = _let_15_[4]
-  return ts.goto_node(tree.nextLexicalNode(ts.get_node_at_cursor(), line, col))
+  return ts.goto_node(tree.nextLexicalInnerNode(ts.get_node_at_cursor(), line, col))
 end
-local function breadthFirstForward()
+local function outerElementForward()
   local _let_16_ = vim.fn.getpos(".")
   local _ = _let_16_[1]
   local line = _let_16_[2]
   local col = _let_16_[3]
   local _0 = _let_16_[4]
-  return ts.goto_node(tree.nextLexicalNode(ts.get_node_at_cursor()))
+  local node = vim.treesitter.get_node()
+  return ts.goto_node(tree.nextLexicalOuterNode(node, line, col))
 end
 local function setup(opts)
   local function _17_()
@@ -134,19 +135,24 @@ local function setup(opts)
   local function _21_()
     return innerElementForward()
   end
-  vim.keymap.set({"n", "v", "o"}, "<Plug>(slurp-depth-first-forward)", _21_, {})
+  vim.keymap.set({"n", "v", "o"}, "<Plug>(slurp-inner-element-forward)", _21_, {})
+  local function _22_()
+    return outerElementForward()
+  end
+  vim.keymap.set({"n", "v", "o"}, "<Plug>(slurp-outer-element-forward)", _22_, {})
   vim.keymap.set({"v", "o"}, "<LocalLeader>ie", "<Plug>(slurp-inner-element-to)")
   vim.keymap.set({"v", "o"}, "<LocalLeader>ae", "<Plug>(slurp-outer-element-to)")
   vim.keymap.set({"v", "o"}, "<LocalLeader>il", "<Plug>(slurp-inner-list-to)")
   vim.keymap.set({"v", "o"}, "<LocalLeader>al", "<Plug>(slurp-outer-list-to)")
-  vim.keymap.set({"n", "v", "o"}, "w", "<Plug>(slurp-depth-first-forward)")
-  local function _22_()
+  vim.keymap.set({"n", "v", "o"}, "w", "<Plug>(slurp-inner-element-forward)")
+  vim.keymap.set({"n", "v", "o"}, "W", "<Plug>(slurp-outer-element-forward)")
+  local function _23_()
     vim.cmd("!make build")
     package.loaded.tree = nil
     return nil
   end
-  vim.keymap.set({"n"}, "<LocalLeader>bld", _22_, {})
-  local function _23_()
+  vim.keymap.set({"n"}, "<LocalLeader>bld", _23_, {})
+  local function _24_()
     local node = ts.get_node_at_cursor()
     local range = tsNodeRange(node, {1, 1})
     local children
@@ -154,21 +160,21 @@ local function setup(opts)
       local acc = {}
       for i = 0, node:child_count() do
         local n = node:child(i)
-        local function _24_()
+        local function _25_()
           if n then
             return n:type()
           else
             return nil
           end
         end
-        table.insert(acc, _24_())
+        table.insert(acc, _25_())
         acc = acc
       end
       children = acc
     end
     return vim.print({"node:", node:type(), "sexp:", children})
   end
-  return vim.keymap.set({"n"}, "<LocalLeader>inf", _23_)
+  return vim.keymap.set({"n"}, "<LocalLeader>inf", _24_)
 end
 setup()
 return {setup = setup}

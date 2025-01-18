@@ -15,7 +15,7 @@ local function nextNamedIbling(node)
     return nextNamedIbling(nextNamedParent(node))
   end
 end
-local function nextNamedNode(node)
+local function nextNamedInnerNode(node)
   if (node:named_child_count() > 0) then
     return node:named_child(0)
   else
@@ -35,16 +35,30 @@ m.range = function(node, offset)
   local c2 = _let_6_["character"]
   return {(r + l1), (c + c1), (r + l2), (c + c2)}
 end
-m.nextLexicalNode = function(node, line, char)
+m.nextLexicalInnerNode = function(node, line, char)
   local _let_7_ = m.range(node, {1, 1})
   local l = _let_7_[1]
   local c = _let_7_[2]
   local _ = _let_7_[3]
   local _0 = _let_7_[4]
   if (((l == line) and (c <= char)) or (l < line)) then
-    return m.nextLexicalNode(nextNamedNode(node), line, char)
+    return m.nextLexicalInnerNode(nextNamedInnerNode(node), line, char)
   else
     return node
   end
 end
+m.nextLexicalOuterNode = function(node, line, char)
+  vim.print("test")
+  local _let_9_ = m.range(node, {1, 1})
+  local l = _let_9_[1]
+  local c = _let_9_[2]
+  local _ = _let_9_[3]
+  local _0 = _let_9_[4]
+  if (((l == line) and (c <= char)) or (l < line)) then
+    return m.nextLexicalOuterNode(nextNamedIbling(node), line, char)
+  else
+    return node
+  end
+end
+vim.print("required tree")
 return m

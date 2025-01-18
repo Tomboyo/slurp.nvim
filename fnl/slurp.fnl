@@ -1,8 +1,3 @@
-;(comment
-;  ; Eval me to get (require :tree) and company to work
-;  (let [f (require :fennel)]
-;    (f.install)))
-
 (local ts (require "nvim-treesitter.ts_utils"))
 (local tree (require :tree))
 
@@ -107,18 +102,12 @@
 
 (fn innerElementForward []
   (let [[_ line col _] (vim.fn.getpos ".")]
-    (ts.goto_node (tree.nextLexicalNode (ts.get_node_at_cursor) line col))))
+    (ts.goto_node (tree.nextLexicalInnerNode (ts.get_node_at_cursor) line col))))
 
-; if the cursor is inside a list between two elements, technically it's "on" the
-; list. We have two options in this case:
-;   - seek forward using depthFirstForward until the cursor is on something,
-;     then proceed breadth-first thereafter
-;   - go breadth-first immediately, moving to the sibling of the list.
-; The former is more intuitive to me, but the latter seems better for a
-; power-user. I think it's probably the way to go, then.
-(fn breadthFirstForward []
-  (let [[_ line col _] (vim.fn.getpos ".")]
-    (ts.goto_node (tree.nextLexicalNode (ts.get_node_at_cursor)))))
+(fn outerElementForward []
+  (let [[_ line col _] (vim.fn.getpos ".")
+        node (vim.treesitter.get_node)]
+    (ts.goto_node (tree.nextLexicalOuterNode node line col))))
 
 (fn setup [opts]
   ; Plug maps
@@ -140,9 +129,13 @@
                   (fn [] (selectListCmd (. textObjects :fennel :list)
                                         (. textObjects :fennel :element :outer)))
                   {})
-(vim.keymap.set [:n :v :o]
-                "<Plug>(slurp-depth-first-forward)"
+  (vim.keymap.set [:n :v :o]
+                "<Plug>(slurp-inner-element-forward)"
                 (fn [] (innerElementForward))
+                {})
+  (vim.keymap.set [:n :v :o]
+                "<Plug>(slurp-outer-element-forward)"
+                (fn [] (outerElementForward))
                 {})
 
   ; Default keymaps
@@ -150,7 +143,8 @@
   (vim.keymap.set [:v :o] "<LocalLeader>ae" "<Plug>(slurp-outer-element-to)")
   (vim.keymap.set [:v :o] "<LocalLeader>il" "<Plug>(slurp-inner-list-to)")
   (vim.keymap.set [:v :o] "<LocalLeader>al" "<Plug>(slurp-outer-list-to)")
-  (vim.keymap.set [:n :v :o] "w" "<Plug>(slurp-depth-first-forward)")
+  (vim.keymap.set [:n :v :o] "w" "<Plug>(slurp-inner-element-forward)")
+  (vim.keymap.set [:n :v :o] "W" "<Plug>(slurp-outer-element-forward)")
   
 
   ; TODO: remove me (debugging keybinds)
