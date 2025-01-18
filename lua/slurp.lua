@@ -98,7 +98,7 @@ local function tsNodeRange(node, offset)
   local c2 = _let_14_["character"]
   return {(r + l1), (c + c1), (r + l2), (c + c2)}
 end
-local function depthFirstForward()
+local function innerElementForward()
   local _let_15_ = vim.fn.getpos(".")
   local _ = _let_15_[1]
   local line = _let_15_[2]
@@ -106,33 +106,47 @@ local function depthFirstForward()
   local _0 = _let_15_[4]
   return ts.goto_node(tree.nextLexicalNode(ts.get_node_at_cursor(), line, col))
 end
+local function breadthFirstForward()
+  local _let_16_ = vim.fn.getpos(".")
+  local _ = _let_16_[1]
+  local line = _let_16_[2]
+  local col = _let_16_[3]
+  local _0 = _let_16_[4]
+  return ts.goto_node(tree.nextLexicalNode(ts.get_node_at_cursor()))
+end
 local function setup(opts)
-  local function _16_()
+  local function _17_()
     return selectElementCmd(textObjects.fennel.element.inner)
   end
-  vim.keymap.set({"v", "o"}, "<Plug>(slurp-inner-element-to)", _16_, {})
-  local function _17_()
+  vim.keymap.set({"v", "o"}, "<Plug>(slurp-inner-element-to)", _17_, {})
+  local function _18_()
     return selectElementCmd(textObjects.fennel.element.outer)
   end
-  vim.keymap.set({"v", "o"}, "<Plug>(slurp-outer-element-to)", _17_, {})
-  local function _18_()
+  vim.keymap.set({"v", "o"}, "<Plug>(slurp-outer-element-to)", _18_, {})
+  local function _19_()
     return selectListCmd(textObjects.fennel.list, textObjects.fennel.element.inner)
   end
-  vim.keymap.set({"v", "o"}, "<Plug>(slurp-inner-list-to)", _18_, {})
-  local function _19_()
+  vim.keymap.set({"v", "o"}, "<Plug>(slurp-inner-list-to)", _19_, {})
+  local function _20_()
     return selectListCmd(textObjects.fennel.list, textObjects.fennel.element.outer)
   end
-  vim.keymap.set({"v", "o"}, "<Plug>(slurp-outer-list-to)", _19_, {})
-  local function _20_()
-    return depthFirstForward()
+  vim.keymap.set({"v", "o"}, "<Plug>(slurp-outer-list-to)", _20_, {})
+  local function _21_()
+    return innerElementForward()
   end
-  vim.keymap.set({"n", "v", "o"}, "<Plug>(slurp-depth-first-forward)", _20_, {})
+  vim.keymap.set({"n", "v", "o"}, "<Plug>(slurp-depth-first-forward)", _21_, {})
   vim.keymap.set({"v", "o"}, "<LocalLeader>ie", "<Plug>(slurp-inner-element-to)")
   vim.keymap.set({"v", "o"}, "<LocalLeader>ae", "<Plug>(slurp-outer-element-to)")
   vim.keymap.set({"v", "o"}, "<LocalLeader>il", "<Plug>(slurp-inner-list-to)")
   vim.keymap.set({"v", "o"}, "<LocalLeader>al", "<Plug>(slurp-outer-list-to)")
   vim.keymap.set({"n", "v", "o"}, "w", "<Plug>(slurp-depth-first-forward)")
-  local function _21_()
+  local function _22_()
+    vim.cmd("!make build")
+    package.loaded.tree = nil
+    return nil
+  end
+  vim.keymap.set({"n"}, "<LocalLeader>bld", _22_, {})
+  local function _23_()
     local node = ts.get_node_at_cursor()
     local range = tsNodeRange(node, {1, 1})
     local children
@@ -140,21 +154,21 @@ local function setup(opts)
       local acc = {}
       for i = 0, node:child_count() do
         local n = node:child(i)
-        local function _22_()
+        local function _24_()
           if n then
             return n:type()
           else
             return nil
           end
         end
-        table.insert(acc, _22_())
+        table.insert(acc, _24_())
         acc = acc
       end
       children = acc
     end
     return vim.print({"node:", node:type(), "sexp:", children})
   end
-  return vim.keymap.set({"n"}, "<LocalLeader>inf", _21_)
+  return vim.keymap.set({"n"}, "<LocalLeader>inf", _23_)
 end
 setup()
 return {setup = setup}

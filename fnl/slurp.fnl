@@ -105,9 +105,20 @@
          :end   {:line l2 :character c2}} (ts.node_to_lsp_range node)]
     [(+ r l1) (+ c c1) (+ r l2) (+ c c2)]))
 
-(fn depthFirstForward []
+(fn innerElementForward []
   (let [[_ line col _] (vim.fn.getpos ".")]
     (ts.goto_node (tree.nextLexicalNode (ts.get_node_at_cursor) line col))))
+
+; if the cursor is inside a list between two elements, technically it's "on" the
+; list. We have two options in this case:
+;   - seek forward using depthFirstForward until the cursor is on something,
+;     then proceed breadth-first thereafter
+;   - go breadth-first immediately, moving to the sibling of the list.
+; The former is more intuitive to me, but the latter seems better for a
+; power-user. I think it's probably the way to go, then.
+(fn breadthFirstForward []
+  (let [[_ line col _] (vim.fn.getpos ".")]
+    (ts.goto_node (tree.nextLexicalNode (ts.get_node_at_cursor)))))
 
 (fn setup [opts]
   ; Plug maps
@@ -131,7 +142,7 @@
                   {})
 (vim.keymap.set [:n :v :o]
                 "<Plug>(slurp-depth-first-forward)"
-                (fn [] (depthFirstForward))
+                (fn [] (innerElementForward))
                 {})
 
   ; Default keymaps
@@ -143,6 +154,10 @@
   
 
   ; TODO: remove me (debugging keybinds)
+  (vim.keymap.set [:n]
+                  "<LocalLeader>bld"
+                  (fn [] (vim.cmd "!make build") (set package.loaded.tree nil))
+                  {})
   (vim.keymap.set [:n] "<LocalLeader>inf"
                   (fn [] (let [node (ts.get_node_at_cursor)
                                range (tsNodeRange node [1 1])
