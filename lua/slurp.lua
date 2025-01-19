@@ -116,7 +116,7 @@ local function outerElementForward()
   local node = vim.treesitter.get_node()
   return ts.goto_node(tree.nextLexicalOuterNode(node, line, col))
 end
-local function slurp(ldelim, rdelim, direction)
+local function slurpForward(delim)
   local nodes
   local function _17_(n)
     if n then
@@ -126,92 +126,168 @@ local function slurp(ldelim, rdelim, direction)
     end
   end
   nodes = iter.iterator(_17_)
-  local isDelimited
+  local nodes0
   local function _19_(n)
-    local _let_20_ = tree.delimiters(n)
-    local a = _let_20_[1]
-    local b = _let_20_[2]
-    return (a and b and (ldelim == a:type()) and (rdelim == b:type()))
+    local x = tree.child(n, -1)
+    return (x and (delim == x:type()))
   end
-  isDelimited = _19_
-  local sibling
-  if (direction == "forward") then
-    local function _21_(n)
-      return n:next_named_sibling()
-    end
-    sibling = _21_
-  elseif (direction == "backward") then
-    local function _22_(n)
-      return n:prev_named_sibling()
-    end
-    sibling = _22_
-  else
-    sibling = nil
+  nodes0 = iter.filter(_19_, nodes)
+  local nodes1
+  local function _20_(n)
+    return n:next_named_sibling()
   end
-  local nodes0 = iter.filter(isDelimited, nodes)
-  local nodes1 = iter.filter(sibling, nodes0)
+  nodes1 = iter.filter(_20_, nodes0)
   local node = nodes1()
   if node then
-    local _let_24_ = tree.delimiters(node)
-    local start = _let_24_[1]
-    local _end = _let_24_[2]
-    local a, b, c, d = nil, nil, nil, nil
-    local function _25_()
-      if (direction == "forward") then
-        return _end
-      elseif (direction == "backward") then
-        return start
-      else
-        return nil
-      end
-    end
-    a, b, c, d = vim.treesitter.get_node_range(_25_())
-    local e, f, g, h = vim.treesitter.get_node_range(sibling(node))
-    if (direction == "forward") then
-      return ts.swap_nodes(_end, {c, d, g, h}, 0)
-    elseif (direction == "backward") then
-      return ts.swap_nodes({e, f, a, b}, start, 0)
-    else
-      return nil
-    end
+    local delim0 = tree.child(node, -1)
+    local subject = node:next_named_sibling()
+    local _, _0, c, d = vim.treesitter.get_node_range(delim0)
+    local _1, _2, g, h = vim.treesitter.get_node_range(subject)
+    return ts.swap_nodes(delim0, {c, d, g, h}, 0)
   else
     return nil
   end
 end
---[[ ("a" ("b") "c") ]]
+local function slurpBackward(delim)
+  local nodes
+  local function _22_(n)
+    if n then
+      return tree.nextNamedParent(n)
+    else
+      return vim.treesitter.get_node()
+    end
+  end
+  nodes = iter.iterator(_22_)
+  local nodes0
+  local function _24_(n)
+    local x = tree.child(n, 0)
+    return (x and (delim == x:type()))
+  end
+  nodes0 = iter.filter(_24_, nodes)
+  local nodes1
+  local function _25_(n)
+    return n:prev_named_sibling()
+  end
+  nodes1 = iter.filter(_25_, nodes0)
+  local node = nodes1()
+  if node then
+    local delim0 = tree.child(node, 0)
+    local subject = node:prev_named_sibling()
+    local a, b, _, _0 = vim.treesitter.get_node_range(delim0)
+    local e, f, _1, _2 = vim.treesitter.get_node_range(subject)
+    return ts.swap_nodes(delim0, {e, f, a, b}, 0)
+  else
+    return nil
+  end
+end
+local function barfForward(delim)
+  local nodes
+  local function _27_(n)
+    if n then
+      return tree.nextNamedParent(n)
+    else
+      return vim.treesitter.get_node()
+    end
+  end
+  nodes = iter.iterator(_27_)
+  local nodes0
+  local function _29_(n)
+    local x = tree.child(n, 0)
+    return (x and (delim == x:type()))
+  end
+  nodes0 = iter.filter(_29_, nodes)
+  local nodes1
+  local function _30_(n)
+    return tree.namedChild(n, 0)
+  end
+  nodes1 = iter.filter(_30_, nodes0)
+  local node = nodes1()
+  if node then
+    local delim0 = tree.child(node, 0)
+    local subject = tree.namedChild(node, 0)
+    local sibling = subject:next_sibling()
+    local a, b, _, _0 = vim.treesitter.get_node_range(subject)
+    local e, f, _1, _2 = vim.treesitter.get_node_range(sibling)
+    return ts.swap_nodes(delim0, {a, b, e, f}, 0)
+  else
+    return nil
+  end
+end
+local function barfBackward(delim)
+  local nodes
+  local function _32_(n)
+    if n then
+      return tree.nextNamedParent(n)
+    else
+      return vim.treesitter.get_node()
+    end
+  end
+  nodes = iter.iterator(_32_)
+  local nodes0
+  local function _34_(n)
+    local x = tree.child(n, -1)
+    return (x and (delim == x:type()))
+  end
+  nodes0 = iter.filter(_34_, nodes)
+  local nodes1
+  local function _35_(n)
+    return tree.namedChild(n, -1)
+  end
+  nodes1 = iter.filter(_35_, nodes0)
+  local node = nodes1()
+  if node then
+    local delim0 = tree.child(node, -1)
+    local subject = tree.namedChild(node, -1)
+    local sibling = subject:prev_sibling()
+    local _, _0, c, d = vim.treesitter.get_node_range(sibling)
+    local _1, _2, g, h = vim.treesitter.get_node_range(subject)
+    return ts.swap_nodes(delim0, {c, d, g, h}, 0)
+  else
+    return nil
+  end
+end
+--[[ ("a" ("b") ("c" "d")) ]]
 local function setup(opts)
-  local function _28_()
+  local function _37_()
     return selectElementCmd(textObjects.fennel.element.inner)
   end
-  vim.keymap.set({"v", "o"}, "<Plug>(slurp-inner-element-to)", _28_, {})
-  local function _29_()
+  vim.keymap.set({"v", "o"}, "<Plug>(slurp-inner-element-to)", _37_, {})
+  local function _38_()
     return selectElementCmd(textObjects.fennel.element.outer)
   end
-  vim.keymap.set({"v", "o"}, "<Plug>(slurp-outer-element-to)", _29_, {})
-  local function _30_()
+  vim.keymap.set({"v", "o"}, "<Plug>(slurp-outer-element-to)", _38_, {})
+  local function _39_()
     return selectListCmd(textObjects.fennel.list, textObjects.fennel.element.inner)
   end
-  vim.keymap.set({"v", "o"}, "<Plug>(slurp-inner-list-to)", _30_, {})
-  local function _31_()
+  vim.keymap.set({"v", "o"}, "<Plug>(slurp-inner-list-to)", _39_, {})
+  local function _40_()
     return selectListCmd(textObjects.fennel.list, textObjects.fennel.element.outer)
   end
-  vim.keymap.set({"v", "o"}, "<Plug>(slurp-outer-list-to)", _31_, {})
-  local function _32_()
+  vim.keymap.set({"v", "o"}, "<Plug>(slurp-outer-list-to)", _40_, {})
+  local function _41_()
     return innerElementForward()
   end
-  vim.keymap.set({"n", "v", "o"}, "<Plug>(slurp-inner-element-forward)", _32_, {})
-  local function _33_()
+  vim.keymap.set({"n", "v", "o"}, "<Plug>(slurp-inner-element-forward)", _41_, {})
+  local function _42_()
     return outerElementForward()
   end
-  vim.keymap.set({"n", "v", "o"}, "<Plug>(slurp-outer-element-forward)", _33_, {})
-  local function _34_()
-    return slurp("(", ")", "forward")
+  vim.keymap.set({"n", "v", "o"}, "<Plug>(slurp-outer-element-forward)", _42_, {})
+  local function _43_()
+    return slurpForward(")")
   end
-  vim.keymap.set({"n", "v", "o"}, "<Plug>(slurp-slurp-close-paren-forward)", _34_)
-  local function _35_()
-    return slurp("(", ")", "backward")
+  vim.keymap.set({"n", "v", "o"}, "<Plug>(slurp-slurp-close-paren-forward)", _43_)
+  local function _44_()
+    return slurpBackward("(")
   end
-  vim.keymap.set({"n", "v", "o"}, "<Plug>(slurp-slurp-open-paren-backward)", _35_)
+  vim.keymap.set({"n", "v", "o"}, "<Plug>(slurp-slurp-open-paren-backward)", _44_)
+  local function _45_()
+    return barfForward("(")
+  end
+  vim.keymap.set({"n", "v", "o"}, "<Plug>(slurp-barf-open-paren-forward)", _45_)
+  local function _46_()
+    return barfBackward(")")
+  end
+  vim.keymap.set({"n", "v", "o"}, "<Plug>(slurp-barf-close-paren-backward)", _46_)
   vim.keymap.set({"v", "o"}, "<LocalLeader>ie", "<Plug>(slurp-inner-element-to)")
   vim.keymap.set({"v", "o"}, "<LocalLeader>ae", "<Plug>(slurp-outer-element-to)")
   vim.keymap.set({"v", "o"}, "<LocalLeader>il", "<Plug>(slurp-inner-list-to)")
@@ -220,13 +296,17 @@ local function setup(opts)
   vim.keymap.set({"n", "v", "o"}, "W", "<Plug>(slurp-outer-element-forward)")
   vim.keymap.set({"n", "v", "o"}, "<LocalLeader>)l", "<Plug>(slurp-slurp-close-paren-forward)")
   vim.keymap.set({"n", "v", "o"}, "<LocalLeader>(h", "<Plug>(slurp-slurp-open-paren-backward)")
-  local function _36_()
+  vim.keymap.set({"n", "v", "o"}, "<LocalLeader>(l", "<Plug>(slurp-barf-open-paren-forward)")
+  vim.keymap.set({"n", "v", "o"}, "<LocalLeader>)h", "<Plug>(slurp-barf-close-paren-backward)")
+  local function _47_()
     vim.cmd("!make build")
     package.loaded.tree = nil
+    package.loaded.iter = nil
+    package.loaded.slurp = nil
     return nil
   end
-  vim.keymap.set({"n"}, "<LocalLeader>bld", _36_, {})
-  local function _37_()
+  vim.keymap.set({"n"}, "<LocalLeader>bld", _47_, {})
+  local function _48_()
     local node = ts.get_node_at_cursor()
     local range = tsNodeRange(node, {1, 1})
     local children
@@ -234,21 +314,21 @@ local function setup(opts)
       local acc = {}
       for i = 0, node:child_count() do
         local n = node:child(i)
-        local function _38_()
+        local function _49_()
           if n then
             return n:type()
           else
             return nil
           end
         end
-        table.insert(acc, _38_())
+        table.insert(acc, _49_())
         acc = acc
       end
       children = acc
     end
     return vim.print({"node:", node:type(), "sexp:", children})
   end
-  return vim.keymap.set({"n"}, "<LocalLeader>inf", _37_)
+  return vim.keymap.set({"n"}, "<LocalLeader>inf", _48_)
 end
 setup()
 return {setup = setup}

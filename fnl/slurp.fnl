@@ -110,37 +110,109 @@
         node (vim.treesitter.get_node)]
     (ts.goto_node (tree.nextLexicalOuterNode node line col))))
 
-; Todo: if the node has no sibling, go up to its parent and see if it can slurp
-; how: change firstSurroundingNode to only return the node, create
-; tree.get_last_child or similar to fetch close/open nodes easily
-; default node to firstSurrounding if not given, extract close from it, then
-; either do the swap or in the else go up to the parent
-(fn slurp [ldelim rdelim direction]
-  (let [nodes (iter.iterator (fn [n]
-                               (if n 
-                                   (tree.nextNamedParent n)
-                                   (vim.treesitter.get_node))))
-        isDelimited (fn [n] (let [[a b] (tree.delimiters n)]
-                              (and a b (= ldelim (a:type)) (= rdelim (b:type)))))
-        sibling (case direction
-                  :forward (fn [n] (n:next_named_sibling))
-                  :backward (fn [n] (n:prev_named_sibling)))
-        nodes (iter.filter isDelimited nodes)
-        nodes (iter.filter sibling nodes)
+(fn slurpForward [delim]
+  (let [; Iterate this node and its named parents
+        nodes (iter.iterator
+                (fn [n]
+                  (if n 
+                      (tree.nextNamedParent n)
+                      (vim.treesitter.get_node))))
+        ; Iterate only nodes with the matching delimeter
+        nodes (iter.filter
+                (fn [n]
+                  (let [x (tree.child n -1)]
+                          (and x (= delim (x:type)))))
+                nodes)
+        ; Iterate only nodes with a subject to swap the delim with
+        nodes (iter.filter
+                (fn [n]
+                  (n:next_named_sibling))
+                nodes)
         node (nodes)]
     (when node
-      (let [[start end] (tree.delimiters node)
-            ; start row, col, end row, col. 1-offset (display
-            ; coords).
-            (a b c d) (vim.treesitter.get_node_range
-                        (case direction :forward end :backward start))
-            (e f g h) (vim.treesitter.get_node_range (sibling node))]
-        (case direction
-          ; cols are 0-offset, so this excludes the sc itself.
-          :forward (ts.swap_nodes end [c d g h] 0)
-          :backward (ts.swap_nodes [e f a b] start 0))))))
+      (let [delim (tree.child node -1)
+            subject (node:next_named_sibling)
+            (_ _ c d) (vim.treesitter.get_node_range delim)
+            (_ _ g h) (vim.treesitter.get_node_range subject)]
+        (ts.swap_nodes delim [c d g h] 0)))))
 
-(comment (:a (:b) :c))
+(fn slurpBackward [delim]
+  (let [; Iterate this node and its named parents
+        nodes (iter.iterator
+                (fn [n]
+                  (if n 
+                      (tree.nextNamedParent n)
+                      (vim.treesitter.get_node))))
+        ; Iterate only nodes with the matching delimeter
+        nodes (iter.filter
+                (fn [n] 
+                  (let [x (tree.child n 0)]
+                    (and x (= delim (x:type)))))
+                nodes)
+        ; Iterate only nodes with a subject to swap the delim with
+        nodes (iter.filter
+                (fn [n]
+                  (n:prev_named_sibling))
+                nodes)
+        node (nodes)]
+    (when node
+      (let [delim (tree.child node 0)
+            subject (node:prev_named_sibling)
+            (a b _ _) (vim.treesitter.get_node_range delim)
+            (e f _ _) (vim.treesitter.get_node_range subject)]
+        (ts.swap_nodes delim [e f a b] 0)))))
+
+(fn barfForward [delim]
+  (let [; Iterate this node and its named parents
+        nodes (iter.iterator
+                (fn [n]
+                  (if n 
+                      (tree.nextNamedParent n)
+                      (vim.treesitter.get_node))))
+        ; Iterate only nodes with the matching delimeter
+        nodes (iter.filter
+                (fn [n] (let [x (tree.child n 0)]
+                          (and x (= delim (x:type)))))
+                nodes)
+        ; Iterate only nodes with a subject to swap the delim with
+        nodes (iter.filter
+                (fn [n] (tree.namedChild n 0))
+                nodes)
+        node (nodes)]
+    (when node
+      (let [delim (tree.child node 0)
+            subject (tree.namedChild node 0)
+            sibling (subject:next_sibling)
+            (a b _ _) (vim.treesitter.get_node_range subject)
+            (e f _ _) (vim.treesitter.get_node_range sibling)]
+        (ts.swap_nodes delim [a b e f] 0)))))
+
+(fn barfBackward [delim]
+  (let [; Iterate this node and its named parents
+        nodes (iter.iterator
+                (fn [n]
+                  (if n 
+                      (tree.nextNamedParent n)
+                      (vim.treesitter.get_node))))
+        ; Iterate only nodes with the matching delimeter
+        nodes (iter.filter
+                (fn [n] (let [x (tree.child n -1)]
+                          (and x (= delim (x:type)))))
+                nodes)
+        ; Iterate only nodes with a subject to swap the delim with
+        nodes (iter.filter
+                (fn [n] (tree.namedChild n -1))
+                nodes)
+        node (nodes)]
+    (when node
+      (let [delim (tree.child node -1)
+            subject (tree.namedChild node -1)
+            sibling (subject:prev_sibling)
+            (_ _ c d) (vim.treesitter.get_node_range sibling)
+            (_ _ g h) (vim.treesitter.get_node_range subject)]
+        (ts.swap_nodes delim [c d g h] 0)))))
+
+(comment (:a (:b) (:c) :d))
 
 (fn setup [opts]
   ; Plug maps
@@ -172,10 +244,17 @@
                 {})
   (vim.keymap.set [:n :v :o]
                   "<Plug>(slurp-slurp-close-paren-forward)"
-                  (fn [] (slurp "(" ")" :forward)))
+                  (fn [] (slurpForward ")")))
   (vim.keymap.set [:n :v :o]
                   "<Plug>(slurp-slurp-open-paren-backward)"
-                  (fn [] (slurp "(" ")" :backward)))
+                  (fn [] (slurpBackward "(")))
+  (vim.keymap.set [:n :v :o]
+                    "<Plug>(slurp-barf-open-paren-forward)"
+                    (fn [] (barfForward "(")))
+  (vim.keymap.set [:n :v :o]
+                    "<Plug>(slurp-barf-close-paren-backward)"
+                    (fn [] (barfBackward ")")))
+
 
   ; Default keymaps
   (vim.keymap.set [:v :o] "<LocalLeader>ie" "<Plug>(slurp-inner-element-to)")
@@ -190,12 +269,20 @@
   (vim.keymap.set [:n :v :o]
                   "<LocalLeader>(h"
                   "<Plug>(slurp-slurp-open-paren-backward)")
-  
+  (vim.keymap.set [:n :v :o]
+                  "<LocalLeader>(l"
+                  "<Plug>(slurp-barf-open-paren-forward)")
+  (vim.keymap.set [:n :v :o]
+                  "<LocalLeader>)h"
+                  "<Plug>(slurp-barf-close-paren-backward)")
 
   ; TODO: remove me (debugging keybinds)
   (vim.keymap.set [:n]
                   "<LocalLeader>bld"
-                  (fn [] (vim.cmd "!make build") (set package.loaded.tree nil))
+                  (fn [] (vim.cmd "!make build")
+                    (set package.loaded.tree nil)
+                    (set package.loaded.iter nil)
+                    (set package.loaded.slurp nil))
                   {})
   (vim.keymap.set [:n] "<LocalLeader>inf"
                   (fn [] (let [node (ts.get_node_at_cursor)

@@ -14,9 +14,11 @@
 
 (comment
   ; Counts to 4, then returns nil forever.
-  (local iter (m.iterator (fn [x] (if x
-                                      (if (> x 3) nil (+ 1 x))
-                                      1))))
+  (local iter (m.iterator
+                (fn [x]
+                  (if x
+                      (if (> x 3) nil (+ 1 x))
+                      1))))
   (iter))
 
 (fn m.filter [pred iter]

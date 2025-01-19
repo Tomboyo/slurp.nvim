@@ -3,9 +3,12 @@
 
 (fn nextNamedParent [node]
   (let [p (node:parent)]
-    (if (p:named)
-        p
-        (nextNamedParent p))))
+    (if p
+        (if (p:named)
+            p
+            (nextNamedParent p))
+        nil)))
+
 ; doing this to "publish" because its less error prone than changing the
 ; function name to m.* and breaking every call
 (set m.nextNamedParent nextNamedParent)
@@ -61,4 +64,15 @@
         [node open close]
         (m.firstSurroundingNode ldelim rdelim (nextNamedParent node)))))
 
+(fn m.child [node offset]
+  (let [index (if (< offset 0)
+                  (+ (node:child_count) offset)
+                  offset)]
+    (node:child index)))
+
+(fn m.namedChild [node offset]
+  (let [index (if (< offset 0)
+                  (+ (node:named_child_count) offset)
+                  offset)]
+    (node:named_child index)))
 m
