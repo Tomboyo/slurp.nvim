@@ -152,20 +152,25 @@ local function slurp(ldelim, rdelim, direction)
   local nodes1 = iter.filter(sibling, nodes0)
   local node = nodes1()
   if node then
+    local _let_24_ = tree.delimiters(node)
+    local start = _let_24_[1]
+    local _end = _let_24_[2]
+    local a, b, c, d = nil, nil, nil, nil
+    local function _25_()
+      if (direction == "forward") then
+        return _end
+      elseif (direction == "backward") then
+        return start
+      else
+        return nil
+      end
+    end
+    a, b, c, d = vim.treesitter.get_node_range(_25_())
+    local e, f, g, h = vim.treesitter.get_node_range(sibling(node))
     if (direction == "forward") then
-      local _let_24_ = tree.delimiters(node)
-      local _ = _let_24_[1]
-      local _end = _let_24_[2]
-      local _0, _1, sl, sc = vim.treesitter.get_node_range(_end)
-      local _2, _3, el, ec = vim.treesitter.get_node_range(sibling(node))
-      return ts.swap_nodes(_end, {sl, sc, el, ec}, 0)
+      return ts.swap_nodes(_end, {c, d, g, h}, 0)
     elseif (direction == "backward") then
-      local _let_25_ = tree.delimiters(node)
-      local start = _let_25_[1]
-      local _ = _let_25_[2]
-      local el, ec = vim.treesitter.get_node_range(start)
-      local sl, sc = vim.treesitter.get_node_range(sibling(node))
-      return ts.swap_nodes({sl, sc, el, ec}, start, 0)
+      return ts.swap_nodes({e, f, a, b}, start, 0)
     else
       return nil
     end
@@ -173,6 +178,7 @@ local function slurp(ldelim, rdelim, direction)
     return nil
   end
 end
+--[[ ("a" ("b") "c") ]]
 local function setup(opts)
   local function _28_()
     return selectElementCmd(textObjects.fennel.element.inner)

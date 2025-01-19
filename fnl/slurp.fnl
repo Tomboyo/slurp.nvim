@@ -129,18 +129,18 @@
         nodes (iter.filter sibling nodes)
         node (nodes)]
     (when node
-      (case direction
-        :forward (let [[_ end] (tree.delimiters node)
-                       ; start row, col, end row, col. 1-offset (display
-                       ; coords).
-                       (_ _ sl sc) (vim.treesitter.get_node_range end)
-                       (_ _ el ec) (vim.treesitter.get_node_range (sibling node))]
-                    ; cols are 0-offset, so this excludes the sc itself.
-                    (ts.swap_nodes end [sl sc el ec] 0))
-        :backward (let [[start _] (tree.delimiters node)
-                        (el ec) (vim.treesitter.get_node_range start)
-                        (sl sc) (vim.treesitter.get_node_range (sibling node))]
-                    (ts.swap_nodes [sl sc el ec] start 0))))))
+      (let [[start end] (tree.delimiters node)
+            ; start row, col, end row, col. 1-offset (display
+            ; coords).
+            (a b c d) (vim.treesitter.get_node_range
+                        (case direction :forward end :backward start))
+            (e f g h) (vim.treesitter.get_node_range (sibling node))]
+        (case direction
+          ; cols are 0-offset, so this excludes the sc itself.
+          :forward (ts.swap_nodes end [c d g h] 0)
+          :backward (ts.swap_nodes [e f a b] start 0))))))
+
+(comment (:a (:b) :c))
 
 (fn setup [opts]
   ; Plug maps
