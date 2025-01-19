@@ -116,7 +116,7 @@ local function outerElementForward()
   local node = vim.treesitter.get_node()
   return ts.goto_node(tree.nextLexicalOuterNode(node, line, col))
 end
-local function slurpForward(ldelim, rdelim)
+local function slurp(ldelim, rdelim, direction)
   local nodes
   local function _17_(n)
     if n then
@@ -134,70 +134,93 @@ local function slurpForward(ldelim, rdelim)
     return (a and b and (ldelim == a:type()) and (rdelim == b:type()))
   end
   isDelimited = _19_
-  local hasSibling
-  local function _21_(n)
-    return n:next_named_sibling()
+  local sibling
+  if (direction == "forward") then
+    local function _21_(n)
+      return n:next_named_sibling()
+    end
+    sibling = _21_
+  elseif (direction == "backward") then
+    local function _22_(n)
+      return n:prev_named_sibling()
+    end
+    sibling = _22_
+  else
+    sibling = nil
   end
-  hasSibling = _21_
   local nodes0 = iter.filter(isDelimited, nodes)
-  local nodes1 = iter.filter(hasSibling, nodes0)
+  local nodes1 = iter.filter(sibling, nodes0)
   local node = nodes1()
   if node then
-    local _let_22_ = tree.delimiters(node)
-    local _ = _let_22_[1]
-    local _end = _let_22_[2]
-    local _0, _1, sl, sc = vim.treesitter.get_node_range(_end)
-    local _2, _3, el, ec = vim.treesitter.get_node_range(node:next_named_sibling())
-    vim.print({sl, sc})
-    return ts.swap_nodes(_end, {sl, sc, el, ec}, 0)
+    if (direction == "forward") then
+      local _let_24_ = tree.delimiters(node)
+      local _ = _let_24_[1]
+      local _end = _let_24_[2]
+      local _0, _1, sl, sc = vim.treesitter.get_node_range(_end)
+      local _2, _3, el, ec = vim.treesitter.get_node_range(sibling(node))
+      return ts.swap_nodes(_end, {sl, sc, el, ec}, 0)
+    elseif (direction == "backward") then
+      local _let_25_ = tree.delimiters(node)
+      local start = _let_25_[1]
+      local _ = _let_25_[2]
+      local el, ec = vim.treesitter.get_node_range(start)
+      local sl, sc = vim.treesitter.get_node_range(sibling(node))
+      return ts.swap_nodes({sl, sc, el, ec}, start, 0)
+    else
+      return nil
+    end
   else
     return nil
   end
 end
---[[ ("cats" ("frogs" ("dogs" "skenks")) "birds" "horses") ]]
 local function setup(opts)
-  local function _24_()
+  local function _28_()
     return selectElementCmd(textObjects.fennel.element.inner)
   end
-  vim.keymap.set({"v", "o"}, "<Plug>(slurp-inner-element-to)", _24_, {})
-  local function _25_()
+  vim.keymap.set({"v", "o"}, "<Plug>(slurp-inner-element-to)", _28_, {})
+  local function _29_()
     return selectElementCmd(textObjects.fennel.element.outer)
   end
-  vim.keymap.set({"v", "o"}, "<Plug>(slurp-outer-element-to)", _25_, {})
-  local function _26_()
+  vim.keymap.set({"v", "o"}, "<Plug>(slurp-outer-element-to)", _29_, {})
+  local function _30_()
     return selectListCmd(textObjects.fennel.list, textObjects.fennel.element.inner)
   end
-  vim.keymap.set({"v", "o"}, "<Plug>(slurp-inner-list-to)", _26_, {})
-  local function _27_()
+  vim.keymap.set({"v", "o"}, "<Plug>(slurp-inner-list-to)", _30_, {})
+  local function _31_()
     return selectListCmd(textObjects.fennel.list, textObjects.fennel.element.outer)
   end
-  vim.keymap.set({"v", "o"}, "<Plug>(slurp-outer-list-to)", _27_, {})
-  local function _28_()
+  vim.keymap.set({"v", "o"}, "<Plug>(slurp-outer-list-to)", _31_, {})
+  local function _32_()
     return innerElementForward()
   end
-  vim.keymap.set({"n", "v", "o"}, "<Plug>(slurp-inner-element-forward)", _28_, {})
-  local function _29_()
+  vim.keymap.set({"n", "v", "o"}, "<Plug>(slurp-inner-element-forward)", _32_, {})
+  local function _33_()
     return outerElementForward()
   end
-  vim.keymap.set({"n", "v", "o"}, "<Plug>(slurp-outer-element-forward)", _29_, {})
-  local function _30_()
-    return slurpForward("(", ")")
+  vim.keymap.set({"n", "v", "o"}, "<Plug>(slurp-outer-element-forward)", _33_, {})
+  local function _34_()
+    return slurp("(", ")", "forward")
   end
-  vim.keymap.set({"n", "v", "o"}, "<Plug>(slurp-slurp-close-paren-forward)", _30_)
+  vim.keymap.set({"n", "v", "o"}, "<Plug>(slurp-slurp-close-paren-forward)", _34_)
+  local function _35_()
+    return slurp("(", ")", "backward")
+  end
+  vim.keymap.set({"n", "v", "o"}, "<Plug>(slurp-slurp-open-paren-backward)", _35_)
   vim.keymap.set({"v", "o"}, "<LocalLeader>ie", "<Plug>(slurp-inner-element-to)")
   vim.keymap.set({"v", "o"}, "<LocalLeader>ae", "<Plug>(slurp-outer-element-to)")
   vim.keymap.set({"v", "o"}, "<LocalLeader>il", "<Plug>(slurp-inner-list-to)")
   vim.keymap.set({"v", "o"}, "<LocalLeader>al", "<Plug>(slurp-outer-list-to)")
   vim.keymap.set({"n", "v", "o"}, "w", "<Plug>(slurp-inner-element-forward)")
   vim.keymap.set({"n", "v", "o"}, "W", "<Plug>(slurp-outer-element-forward)")
-  vim.keymap.set({"n", "v", "o"}, "<LocalLeader>)", "<Plug>(slurp-slurp-close-paren-forward)")
-  local function _31_()
+  vim.keymap.set({"n", "v", "o"}, "<LocalLeader>)l", "<Plug>(slurp-slurp-close-paren-forward)")
+  vim.keymap.set({"n", "v", "o"}, "<LocalLeader>(h", "<Plug>(slurp-slurp-open-paren-backward)")
+  local function _36_()
     vim.cmd("!make build")
     package.loaded.tree = nil
     return nil
   end
-  vim.keymap.set({"n"}, "<LocalLeader>bld", _31_, {})
-  local function _32_()
+  vim.keymap.set({"n"}, "<LocalLeader>bld", _36_, {})
+  local function _37_()
     local node = ts.get_node_at_cursor()
     local range = tsNodeRange(node, {1, 1})
     local children
@@ -205,21 +228,21 @@ local function setup(opts)
       local acc = {}
       for i = 0, node:child_count() do
         local n = node:child(i)
-        local function _33_()
+        local function _38_()
           if n then
             return n:type()
           else
             return nil
           end
         end
-        table.insert(acc, _33_())
+        table.insert(acc, _38_())
         acc = acc
       end
       children = acc
     end
     return vim.print({"node:", node:type(), "sexp:", children})
   end
-  return vim.keymap.set({"n"}, "<LocalLeader>inf", _32_)
+  return vim.keymap.set({"n"}, "<LocalLeader>inf", _37_)
 end
 setup()
 return {setup = setup}
