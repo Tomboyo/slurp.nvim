@@ -8,6 +8,7 @@ local function nextNamedParent(node)
     return nextNamedParent(p)
   end
 end
+m.nextNamedParent = nextNamedParent
 local function nextNamedIbling(node)
   if node:next_named_sibling() then
     return node:next_named_sibling()
@@ -59,17 +60,17 @@ m.nextLexicalOuterNode = function(node, line, char)
     return node
   end
 end
+m.delimiters = function(node)
+  local len = node:child_count()
+  if (len >= 1) then
+    return {node:child(0), node:child((len - 1))}
+  else
+    return {nil, nil}
+  end
+end
 m.firstSurroundingNode = function(ldelim, rdelim, node)
   local node0 = (node or vim.treesitter.get_node())
-  local len = node0:child_count()
-  local function _11_()
-    if (len >= 2) then
-      return {node0:child(0), node0:child((len - 1))}
-    else
-      return {nil, nil}
-    end
-  end
-  local _let_12_ = _11_()
+  local _let_12_ = m.delimiters(node0)
   local open = _let_12_[1]
   local close = _let_12_[2]
   if (open and close and (ldelim == vim.treesitter.get_node_text(open, 0)) and (rdelim == vim.treesitter.get_node_text(close, 0))) then
@@ -78,5 +79,4 @@ m.firstSurroundingNode = function(ldelim, rdelim, node)
     return m.firstSurroundingNode(ldelim, rdelim, nextNamedParent(node0))
   end
 end
-vim.print("required tree")
 return m

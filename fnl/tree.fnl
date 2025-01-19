@@ -6,6 +6,9 @@
     (if (p:named)
         p
         (nextNamedParent p))))
+; doing this to "publish" because its less error prone than changing the
+; function name to m.* and breaking every call
+(set m.nextNamedParent nextNamedParent)
 
 (fn nextNamedIbling [node]
   "Get the next sibling or nibling"
@@ -19,6 +22,7 @@
       (nextNamedIbling node)))
 
 (fn m.range [node offset]
+  "Deprecated. Use vim.treesitter.get_node_range"
   (let [offset (or offset [1 0])
         [r c] offset
         {:start {:line l1 :character c1}
@@ -41,19 +45,20 @@
         (m.nextLexicalOuterNode (nextNamedIbling node) line char)
         node)))
 
+(fn m.delimiters [node]
+  (let [len (node:child_count)]
+    (if (>= len 1)
+      [(node:child 0) (node:child (- len 1))]
+      [nil nil])))
+
 (fn m.firstSurroundingNode [ldelim rdelim node]
   (let [node (or node (vim.treesitter.get_node))
-        len (node:child_count)
-        [open close] (if (>= len 2)
-                         [(node:child 0) (node:child (- len 1))]
-                         [nil nil])]
+        [open close] (m.delimiters node)]
     (if (and open
              close
              (= ldelim (vim.treesitter.get_node_text open 0))
              (= rdelim (vim.treesitter.get_node_text close 0)))
         [node open close]
         (m.firstSurroundingNode ldelim rdelim (nextNamedParent node)))))
-
-(vim.print "required tree")
 
 m
