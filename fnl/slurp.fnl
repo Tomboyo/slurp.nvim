@@ -100,6 +100,17 @@
         p (and n (tree.nextNamedParent n))]
     (ts.update_selection 0 (or p n))))
 
+(fn selectDelimitedElement [open close n]
+  (let [n (or n (vim.treesitter.get_node))
+        start (tree.child n 0)
+        start (and start (vim.treesitter.get_node_text start 0))
+        end (tree.child n -1)
+        end (and end (vim.treesitter.get_node_text end 0))]
+    (if (and (= open start) (= close end))
+        (ts.update_selection 0 n)
+        (let [p (tree.nextNamedParent n)]
+          (if p (selectDelimitedElement open close p))))))
+
 (fn selectListCmd [listTab elTab]
   (let [start (ts.get_node_at_cursor 0)
         node (getStopNode start (. listTab :stopNodes))]
@@ -187,28 +198,26 @@
         [c d g h]))))
 
 (fn setup [opts]
-  ; Plug maps
+  ;; Plug maps
+
+  ; Element selection
   (vim.keymap.set [:v :o] "<Plug>(slurp-select-element)"
-                  selectElementAtCursor
-                  {})
+                  selectElementAtCursor)
   (vim.keymap.set [:v :o]
                   "<Plug>(slurp-select-inside-element)"
-                  selectInsideElementAtCursor
-                  {})
+                  selectInsideElementAtCursor)
   (vim.keymap.set [:v :o]
                   "<Plug>(slurp-select-outside-element)"
-                  selectSurroundingElementAtCursor
-                  {})
-  (vim.keymap.set [:v :o]
-                  "<Plug>(slurp-inner-list-to)"
-                  (fn [] (selectListCmd (. textObjects :fennel :list)
-                                        (. textObjects :fennel :element :inner)))
-                  {})
-  (vim.keymap.set [:v :o]
-                  "<Plug>(slurp-outer-list-to)"
-                  (fn [] (selectListCmd (. textObjects :fennel :list)
-                                        (. textObjects :fennel :element :outer)))
-                  {})
+                  selectSurroundingElementAtCursor)
+  (vim.keymap.set [:v :o] "<Plug>(slurp-select-(element))"
+                  (fn [] (selectDelimitedElement "(" ")")))
+  (vim.keymap.set [:v :o] "<Plug>(slurp-select-[element])"
+                  (fn [] (selectDelimitedElement "[" "]")))
+  (vim.keymap.set [:v :o] "<Plug>(slurp-select-{element})"
+                  (fn [] (selectDelimitedElement "{" "}")))
+
+  ; motion
+  ; todo: rename as into and over (like a debugger)
   (vim.keymap.set [:n :v :o]
                 "<Plug>(slurp-inner-element-forward)"
                 (fn [] (innerElementForward))
@@ -217,6 +226,8 @@
                 "<Plug>(slurp-outer-element-forward)"
                 (fn [] (outerElementForward))
                 {})
+  
+  ; slurp/barf (move delimiter)
   (vim.keymap.set [:n :v :o]
                   "<Plug>(slurp-slurp-close-paren-forward)"
                   (fn [] (slurpForward ")")))
@@ -230,15 +241,23 @@
                     "<Plug>(slurp-barf-close-paren-backward)"
                     (fn [] (barfBackward ")")))
 
+  ;; Default keymaps
 
-  ; Default keymaps
+  ; element selection
   (vim.keymap.set [:v :o] "<LocalLeader>ee" "<Plug>(slurp-select-element)")
   (vim.keymap.set [:v :o] "<LocalLeader>ie" "<Plug>(slurp-select-inside-element)")
   (vim.keymap.set [:v :o] "<LocalLeader>ae" "<Plug>(slurp-select-outside-element)")
+  (vim.keymap.set [:v :o] "<LocalLeader>)e" "<Plug>(slurp-select-(element))")
+  (vim.keymap.set [:v :o] "<LocalLeader>]e" "<Plug>(slurp-select-[element])")
+  (vim.keymap.set [:v :o] "<LocalLeader>}e" "<Plug>(slurp-select-{element})")
   (vim.keymap.set [:v :o] "<LocalLeader>il" "<Plug>(slurp-inner-list-to)")
   (vim.keymap.set [:v :o] "<LocalLeader>al" "<Plug>(slurp-outer-list-to)")
+
+  ;motion
   (vim.keymap.set [:n :v :o] "w" "<Plug>(slurp-inner-element-forward)")
   (vim.keymap.set [:n :v :o] "W" "<Plug>(slurp-outer-element-forward)")
+
+  ; slurp/barf (move delimiter)
   (vim.keymap.set [:n :v :o]
                   "<LocalLeader>)l"
                   "<Plug>(slurp-slurp-close-paren-forward)")

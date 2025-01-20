@@ -64,19 +64,11 @@ m.nextLexicalOuterNode = function(node, line, char)
     return node
   end
 end
-m.delimiters = function(node)
-  local len = node:child_count()
-  if (len >= 1) then
-    return {node:child(0), node:child((len - 1))}
-  else
-    return {nil, nil}
-  end
-end
 m.firstSurroundingNode = function(ldelim, rdelim, node)
   local node0 = (node or vim.treesitter.get_node())
-  local _let_13_ = m.delimiters(node0)
-  local open = _let_13_[1]
-  local close = _let_13_[2]
+  local _let_12_ = m.delimiters(node0)
+  local open = _let_12_[1]
+  local close = _let_12_[2]
   if (open and close and (ldelim == vim.treesitter.get_node_text(open, 0)) and (rdelim == vim.treesitter.get_node_text(close, 0))) then
     return {node0, open, close}
   else

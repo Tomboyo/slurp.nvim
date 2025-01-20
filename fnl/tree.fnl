@@ -48,12 +48,6 @@
         (m.nextLexicalOuterNode (nextNamedIbling node) line char)
         node)))
 
-(fn m.delimiters [node]
-  (let [len (node:child_count)]
-    (if (>= len 1)
-      [(node:child 0) (node:child (- len 1))]
-      [nil nil])))
-
 (fn m.firstSurroundingNode [ldelim rdelim node]
   (let [node (or node (vim.treesitter.get_node))
         [open close] (m.delimiters node)]
