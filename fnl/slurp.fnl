@@ -20,72 +20,6 @@
 ; select the node of that embedded language. So if we try to outer-select a
 ; string, we might end up only selecting something inside it.
 
-(fn id [x] x)
-
-(fn listInnerRange [node]
-  (let [range (ts.node_to_lsp_range node)
-        l1 (+ 1 (. range :start :line))
-        l2 (+ 1 (. range :end :line))
-        c1 (+ 2 (. range :start :character))
-        c2 (- (. range :end :character) 1)]
-    [l1 c1 l2 c2]))
-
-(local textObjects {
-       ; https://github.com/alexmozaidze/tree-sitter-fennel/blob/main/grammar.js
-       :fennel {
-         :element {
-           :inner {
-             :nodes {
-               :string (fn [node] (node:named_child 0))
-               :list listInnerRange
-               :sequence listInnerRange
-               :table listInnerRange
-               :fn_form listInnerRange
-               :let_form listInnerRange
-               :if_form listInnerRange
-               :local_form listInnerRange
-               :var_form listInnerRange
-               :let_vars listInnerRange
-               :sequence_arguments listInnerRange
-               :symbol_fragment (fn [node] (node:parent))}
-             :default id}
-           :outer {
-             :nodes {
-               :string_content (fn [node] (node:parent))
-               :symbol_fragment (fn [node] (node:parent))}
-             :default id}}
-         :list {
-           :stopNodes [:table :table_binding :sequence :local_form :fn_form :let_form :list
-                       :let_vars :sequence_arguments :set_form :if_form]}}})
-
-(fn getTextObjectNode [tab node]
-  (let [f (or (?. tab :nodes (node:type)) (. tab :default))]
-    (f node)))
-
-(fn selectElement [tab node]
-  (let [node (getTextObjectNode tab node)]
-    (if (= :table (type node))
-        (let [[l1 c1 l2 c2] node]
-          (vim.fn.setpos "'<" [0 l1 c1 0])
-          (vim.fn.setpos "'>" [0 l2 c2 0])
-          (vim.cmd "normal! gv"))
-        (ts.update_selection 0 node))))
-
-(fn listContains [t e]
-  (accumulate [bool false i v (ipairs t) &until bool]
-    (or (= e v) bool)))
-
-(fn getStopNode [n stopList]
-  (if (listContains stopList (n:type))
-      n
-      (let [p (n:parent)]
-        ; In case the list is missing a stop node, return the root node.
-        (if p
-            (getStopNode p stopList)
-            n))))
-
-;; Api
-
 (fn selectElementAtCursor []
   (ts.update_selection 0 (vim.treesitter.get_node)))
 
@@ -110,11 +44,6 @@
         (ts.update_selection 0 n)
         (let [p (tree.nextNamedParent n)]
           (if p (selectDelimitedElement open close p))))))
-
-(fn selectListCmd [listTab elTab]
-  (let [start (ts.get_node_at_cursor 0)
-        node (getStopNode start (. listTab :stopNodes))]
-    (selectElement elTab node)))
 
 (fn tsNodeRange [node offset]
   (let [offset (or offset [1 0])
