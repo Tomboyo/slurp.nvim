@@ -203,10 +203,13 @@
   ; TODO: remove me (debugging keybinds)
   (vim.keymap.set [:n]
                   "<LocalLeader>bld"
-                  (fn [] (vim.cmd "!make build")
+                  (fn []
+                    (vim.cmd "!make build")
                     (set package.loaded.tree nil)
                     (set package.loaded.iter nil)
-                    (set package.loaded.slurp nil))
+                    (set package.loaded.slurp nil)
+                    (vim.cmd "ConjureEvalBuf")
+                    (setup))
                   {})
   (vim.keymap.set [:n] "<LocalLeader>inf"
                   (fn [] (let [node (ts.get_node_at_cursor)
@@ -219,8 +222,6 @@
                                        "node:" (node:type)
                                        ;"range:" range
                                        "sexp:" children])))))
-
-(setup)
 
 ; Module
 {: setup}

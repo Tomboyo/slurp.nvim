@@ -213,7 +213,8 @@ local function setup(opts)
     package.loaded.tree = nil
     package.loaded.iter = nil
     package.loaded.slurp = nil
-    return nil
+    vim.cmd("ConjureEvalBuf")
+    return setup()
   end
   vim.keymap.set({"n"}, "<LocalLeader>bld", _34_, {})
   local function _35_()
@@ -240,5 +241,4 @@ local function setup(opts)
   end
   return vim.keymap.set({"n"}, "<LocalLeader>inf", _35_)
 end
-setup()
 return {setup = setup}
