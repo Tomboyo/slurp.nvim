@@ -216,29 +216,6 @@ local function setup(opts)
     vim.cmd("ConjureEvalBuf")
     return setup()
   end
-  vim.keymap.set({"n"}, "<LocalLeader>bld", _34_, {})
-  local function _35_()
-    local node = ts.get_node_at_cursor()
-    local range = tsNodeRange(node, {1, 1})
-    local children
-    do
-      local acc = {}
-      for i = 0, node:child_count() do
-        local n = node:child(i)
-        local function _36_()
-          if n then
-            return n:type()
-          else
-            return nil
-          end
-        end
-        table.insert(acc, _36_())
-        acc = acc
-      end
-      children = acc
-    end
-    return vim.print({"node:", node:type(), "sexp:", children})
-  end
-  return vim.keymap.set({"n"}, "<LocalLeader>inf", _35_)
+  return vim.keymap.set({"n"}, "<LocalLeader>bld", _34_, {})
 end
 return {setup = setup}

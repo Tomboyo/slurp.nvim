@@ -210,18 +210,7 @@
                     (set package.loaded.slurp nil)
                     (vim.cmd "ConjureEvalBuf")
                     (setup))
-                  {})
-  (vim.keymap.set [:n] "<LocalLeader>inf"
-                  (fn [] (let [node (ts.get_node_at_cursor)
-                               range (tsNodeRange node [1 1])
-                               children (faccumulate [acc [] i 0 (node:child_count)]
-                                          (let [n (node:child i)]
-                                            (table.insert acc (if n (n:type)))
-                                            acc))]
-                           (vim.print [;"cursor:" (vim.fn.getpos ".")
-                                       "node:" (node:type)
-                                       ;"range:" range
-                                       "sexp:" children])))))
+                  {}))
 
 ; Module
 {: setup}
