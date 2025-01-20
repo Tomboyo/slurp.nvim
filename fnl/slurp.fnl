@@ -110,109 +110,70 @@
         node (vim.treesitter.get_node)]
     (ts.goto_node (tree.nextLexicalOuterNode node line col))))
 
-(fn slurpForward [delim]
-  (let [; Iterate this node and its named parents
+(fn moveDelimiter [symbol getDelim getSubject getSubjectRange]
+  (let [; Iterates over this node and its named parents
         nodes (iter.iterator
                 (fn [n]
                   (if n 
                       (tree.nextNamedParent n)
                       (vim.treesitter.get_node))))
-        ; Iterate only nodes with the matching delimeter
+        ; Filter out nodes without a matching delimiter
         nodes (iter.filter
                 (fn [n]
-                  (let [x (tree.child n -1)]
-                          (and x (= delim (x:type)))))
+                  (let [x (getDelim n)]
+                    (and x (= symbol
+                              (vim.treesitter.get_node_text x 0)))))
                 nodes)
-        ; Iterate only nodes with a subject to swap the delim with
-        nodes (iter.filter
-                (fn [n]
-                  (n:next_named_sibling))
-                nodes)
+        ; Filter out nodes which lack a subject to swap with the delimiter
+        nodes (iter.filter getSubject nodes)
         node (nodes)]
     (when node
-      (let [delim (tree.child node -1)
-            subject (node:next_named_sibling)
-            (_ _ c d) (vim.treesitter.get_node_range delim)
-            (_ _ g h) (vim.treesitter.get_node_range subject)]
-        (ts.swap_nodes delim [c d g h] 0)))))
+      (let [delim (getDelim node)
+            subject (getSubject node)
+            range (getSubjectRange delim subject)]
+        (ts.swap_nodes delim range 0)))))
 
-(fn slurpBackward [delim]
-  (let [; Iterate this node and its named parents
-        nodes (iter.iterator
-                (fn [n]
-                  (if n 
-                      (tree.nextNamedParent n)
-                      (vim.treesitter.get_node))))
-        ; Iterate only nodes with the matching delimeter
-        nodes (iter.filter
-                (fn [n] 
-                  (let [x (tree.child n 0)]
-                    (and x (= delim (x:type)))))
-                nodes)
-        ; Iterate only nodes with a subject to swap the delim with
-        nodes (iter.filter
-                (fn [n]
-                  (n:prev_named_sibling))
-                nodes)
-        node (nodes)]
-    (when node
-      (let [delim (tree.child node 0)
-            subject (node:prev_named_sibling)
-            (a b _ _) (vim.treesitter.get_node_range delim)
-            (e f _ _) (vim.treesitter.get_node_range subject)]
-        (ts.swap_nodes delim [e f a b] 0)))))
+(fn slurpForward [symbol]
+  (moveDelimiter
+    symbol
+    (fn [n] (tree.child n -1))
+    (fn [n] (n:next_named_sibling))
+    (fn [d s]
+      (let [(_ _ c d) (vim.treesitter.get_node_range d)
+            (_ _ g h) (vim.treesitter.get_node_range s)]
+        [c d g h]))))
 
-(fn barfForward [delim]
-  (let [; Iterate this node and its named parents
-        nodes (iter.iterator
-                (fn [n]
-                  (if n 
-                      (tree.nextNamedParent n)
-                      (vim.treesitter.get_node))))
-        ; Iterate only nodes with the matching delimeter
-        nodes (iter.filter
-                (fn [n] (let [x (tree.child n 0)]
-                          (and x (= delim (x:type)))))
-                nodes)
-        ; Iterate only nodes with a subject to swap the delim with
-        nodes (iter.filter
-                (fn [n] (tree.namedChild n 0))
-                nodes)
-        node (nodes)]
-    (when node
-      (let [delim (tree.child node 0)
-            subject (tree.namedChild node 0)
-            sibling (subject:next_sibling)
-            (a b _ _) (vim.treesitter.get_node_range subject)
+(fn slurpBackward [symbol]
+  (moveDelimiter
+    symbol
+    (fn [n] (tree.child n 0))
+    (fn [n] (n:prev_named_sibling))
+    (fn [d s]
+      (let [(a b _ _) (vim.treesitter.get_node_range d)
+            (e f _ _) (vim.treesitter.get_node_range s)]
+        [e f a b]))))
+
+(fn barfForward [symbol]
+  (moveDelimiter
+    symbol
+    (fn [n] (tree.child n 0))
+    (fn [n] (tree.namedChild n 0))
+    (fn [d s]
+      (let [sibling (s:next_sibling)
+            (a b _ _) (vim.treesitter.get_node_range s)
             (e f _ _) (vim.treesitter.get_node_range sibling)]
-        (ts.swap_nodes delim [a b e f] 0)))))
+        [a b e f]))))
 
-(fn barfBackward [delim]
-  (let [; Iterate this node and its named parents
-        nodes (iter.iterator
-                (fn [n]
-                  (if n 
-                      (tree.nextNamedParent n)
-                      (vim.treesitter.get_node))))
-        ; Iterate only nodes with the matching delimeter
-        nodes (iter.filter
-                (fn [n] (let [x (tree.child n -1)]
-                          (and x (= delim (x:type)))))
-                nodes)
-        ; Iterate only nodes with a subject to swap the delim with
-        nodes (iter.filter
-                (fn [n] (tree.namedChild n -1))
-                nodes)
-        node (nodes)]
-    (when node
-      (let [delim (tree.child node -1)
-            subject (tree.namedChild node -1)
-            sibling (subject:prev_sibling)
+(fn barfBackward [symbol]
+  (moveDelimiter
+    symbol
+    (fn [n] (tree.child n -1))
+    (fn [n] (tree.namedChild n -1))
+    (fn [d s]
+      (let [sibling (s:prev_sibling)
             (_ _ c d) (vim.treesitter.get_node_range sibling)
-            (_ _ g h) (vim.treesitter.get_node_range subject)]
-        (ts.swap_nodes delim [c d g h] 0)))))
-
-(comment (:a (:b) (:c) :d))
+            (_ _ g h) (vim.treesitter.get_node_range s)]
+        [c d g h]))))
 
 (fn setup [opts]
   ; Plug maps
