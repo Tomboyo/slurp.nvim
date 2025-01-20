@@ -45,13 +45,6 @@
         (let [p (tree.nextNamedParent n)]
           (if p (selectDelimitedElement open close p))))))
 
-(fn tsNodeRange [node offset]
-  (let [offset (or offset [1 0])
-        [r c] offset
-        {:start {:line l1 :character c1}
-         :end   {:line l2 :character c2}} (ts.node_to_lsp_range node)]
-    [(+ r l1) (+ c c1) (+ r l2) (+ c c2)]))
-
 (fn innerElementForward []
   (let [[_ line col _] (vim.fn.getpos ".")]
     (ts.goto_node (tree.nextLexicalInnerNode (ts.get_node_at_cursor) line col))))
