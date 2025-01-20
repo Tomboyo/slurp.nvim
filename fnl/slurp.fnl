@@ -176,9 +176,9 @@
   (vim.keymap.set [:v :o] "<LocalLeader>ee" "<Plug>(slurp-select-element)")
   (vim.keymap.set [:v :o] "<LocalLeader>ie" "<Plug>(slurp-select-inside-element)")
   (vim.keymap.set [:v :o] "<LocalLeader>ae" "<Plug>(slurp-select-outside-element)")
-  (vim.keymap.set [:v :o] "<LocalLeader>)e" "<Plug>(slurp-select-(element))")
-  (vim.keymap.set [:v :o] "<LocalLeader>]e" "<Plug>(slurp-select-[element])")
-  (vim.keymap.set [:v :o] "<LocalLeader>}e" "<Plug>(slurp-select-{element})")
+  (vim.keymap.set [:v :o] "<LocalLeader>e)" "<Plug>(slurp-select-(element))")
+  (vim.keymap.set [:v :o] "<LocalLeader>e]" "<Plug>(slurp-select-[element])")
+  (vim.keymap.set [:v :o] "<LocalLeader>e}" "<Plug>(slurp-select-{element})")
   (vim.keymap.set [:v :o] "<LocalLeader>il" "<Plug>(slurp-inner-list-to)")
   (vim.keymap.set [:v :o] "<LocalLeader>al" "<Plug>(slurp-outer-list-to)")
 
