@@ -75,4 +75,10 @@
                   (+ (node:named_child_count) offset)
                   offset)]
     (node:named_child index)))
+
+(fn m.rangeBetween [s e]
+  (let [(a b _ _) (vim.treesitter.get_node_range s)
+        (_ _ g h) (vim.treesitter.get_node_range e)]
+    [a b g h]))
+
 m

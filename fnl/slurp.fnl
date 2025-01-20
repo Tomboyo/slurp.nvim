@@ -86,8 +86,19 @@
 
 ;; Api
 
-(fn selectElementCmd [tab]
-  (selectElement tab (ts.get_node_at_cursor 0)))
+(fn selectElementAtCursor []
+  (ts.update_selection 0 (vim.treesitter.get_node)))
+
+(fn selectInsideElementAtCursor []
+  (let [n (vim.treesitter.get_node)
+        s (tree.namedChild n 0)
+        e (tree.namedChild n -1)]
+    (ts.update_selection 0 (if s (tree.rangeBetween s e) n))))
+
+(fn selectSurroundingElementAtCursor []
+  (let [n (vim.treesitter.get_node)
+        p (and n (tree.nextNamedParent n))]
+    (ts.update_selection 0 (or p n))))
 
 (fn selectListCmd [listTab elTab]
   (let [start (ts.get_node_at_cursor 0)
@@ -177,13 +188,16 @@
 
 (fn setup [opts]
   ; Plug maps
-  (vim.keymap.set [:v :o] "<Plug>(slurp-inner-element-to)"
-                  ; TODO: use ftype or something similar to get language table
-                  (fn [] (selectElementCmd (. textObjects :fennel :element :inner)))
+  (vim.keymap.set [:v :o] "<Plug>(slurp-select-element)"
+                  selectElementAtCursor
                   {})
   (vim.keymap.set [:v :o]
-                  "<Plug>(slurp-outer-element-to)"
-                  (fn [] (selectElementCmd (. textObjects :fennel :element :outer)))
+                  "<Plug>(slurp-select-inside-element)"
+                  selectInsideElementAtCursor
+                  {})
+  (vim.keymap.set [:v :o]
+                  "<Plug>(slurp-select-outside-element)"
+                  selectSurroundingElementAtCursor
                   {})
   (vim.keymap.set [:v :o]
                   "<Plug>(slurp-inner-list-to)"
@@ -218,8 +232,9 @@
 
 
   ; Default keymaps
-  (vim.keymap.set [:v :o] "<LocalLeader>ie" "<Plug>(slurp-inner-element-to)")
-  (vim.keymap.set [:v :o] "<LocalLeader>ae" "<Plug>(slurp-outer-element-to)")
+  (vim.keymap.set [:v :o] "<LocalLeader>ee" "<Plug>(slurp-select-element)")
+  (vim.keymap.set [:v :o] "<LocalLeader>ie" "<Plug>(slurp-select-inside-element)")
+  (vim.keymap.set [:v :o] "<LocalLeader>ae" "<Plug>(slurp-select-outside-element)")
   (vim.keymap.set [:v :o] "<LocalLeader>il" "<Plug>(slurp-inner-list-to)")
   (vim.keymap.set [:v :o] "<LocalLeader>al" "<Plug>(slurp-outer-list-to)")
   (vim.keymap.set [:n :v :o] "w" "<Plug>(slurp-inner-element-forward)")

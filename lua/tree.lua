@@ -101,4 +101,9 @@ m.namedChild = function(node, offset)
   end
   return node:named_child(index)
 end
+m.rangeBetween = function(s, e)
+  local a, b, _, _0 = vim.treesitter.get_node_range(s)
+  local _1, _2, g, h = vim.treesitter.get_node_range(e)
+  return {a, b, g, h}
+end
 return m
