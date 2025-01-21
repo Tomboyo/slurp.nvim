@@ -70,7 +70,7 @@ local function forwardOverElement()
   local line = _let_10_[2]
   local col = _let_10_[3]
   local _0 = _let_10_[4]
-  local node = vim.treesitter.get_node()
+  local node = vts.get_node()
   return ts.goto_node(tree.nextLexicalOuterNode(node, line, col))
 end
 local function moveDelimiter(symbol, getDelim, getSubject, getSubjectRange)
@@ -79,14 +79,14 @@ local function moveDelimiter(symbol, getDelim, getSubject, getSubjectRange)
     if n then
       return tree.nextNamedParent(n)
     else
-      return vim.treesitter.get_node()
+      return vts.get_node()
     end
   end
   nodes = iter.iterator(_11_)
   local nodes0
   local function _13_(n)
     local x = getDelim(n)
-    return (x and (symbol == vim.treesitter.get_node_text(x, 0)))
+    return (x and (symbol == vts.get_node_text(x, 0)))
   end
   nodes0 = iter.filter(_13_, nodes)
   local nodes1 = iter.filter(getSubject, nodes0)
@@ -108,8 +108,8 @@ local function slurpForward(symbol)
     return n:next_named_sibling()
   end
   local function _17_(d, s)
-    local _, _0, c, d0 = vim.treesitter.get_node_range(d)
-    local _1, _2, g, h = vim.treesitter.get_node_range(s)
+    local _, _0, c, d0 = vts.get_node_range(d)
+    local _1, _2, g, h = vts.get_node_range(s)
     return {c, d0, g, h}
   end
   return moveDelimiter(symbol, _15_, _16_, _17_)
@@ -122,8 +122,8 @@ local function slurpBackward(symbol)
     return n:prev_named_sibling()
   end
   local function _20_(d, s)
-    local a, b, _, _0 = vim.treesitter.get_node_range(d)
-    local e, f, _1, _2 = vim.treesitter.get_node_range(s)
+    local a, b, _, _0 = vts.get_node_range(d)
+    local e, f, _1, _2 = vts.get_node_range(s)
     return {e, f, a, b}
   end
   return moveDelimiter(symbol, _18_, _19_, _20_)
@@ -137,8 +137,8 @@ local function barfForward(symbol)
   end
   local function _23_(d, s)
     local sibling = s:next_sibling()
-    local a, b, _, _0 = vim.treesitter.get_node_range(s)
-    local e, f, _1, _2 = vim.treesitter.get_node_range(sibling)
+    local a, b, _, _0 = vts.get_node_range(s)
+    local e, f, _1, _2 = vts.get_node_range(sibling)
     return {a, b, e, f}
   end
   return moveDelimiter(symbol, _21_, _22_, _23_)
@@ -152,8 +152,8 @@ local function barfBackward(symbol)
   end
   local function _26_(d, s)
     local sibling = s:prev_sibling()
-    local _, _0, c, d0 = vim.treesitter.get_node_range(sibling)
-    local _1, _2, g, h = vim.treesitter.get_node_range(s)
+    local _, _0, c, d0 = vts.get_node_range(sibling)
+    local _1, _2, g, h = vts.get_node_range(s)
     return {c, d0, g, h}
   end
   return moveDelimiter(symbol, _24_, _25_, _26_)

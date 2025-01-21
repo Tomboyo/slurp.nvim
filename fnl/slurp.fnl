@@ -63,7 +63,7 @@
 
 (fn forwardOverElement []
   (let [[_ line col _] (vim.fn.getpos ".")
-        node (vim.treesitter.get_node)]
+        node (vts.get_node)]
     (ts.goto_node (tree.nextLexicalOuterNode node line col))))
 
 (fn moveDelimiter [symbol getDelim getSubject getSubjectRange]
@@ -72,13 +72,13 @@
                 (fn [n]
                   (if n 
                       (tree.nextNamedParent n)
-                      (vim.treesitter.get_node))))
+                      (vts.get_node))))
         ; Filter out nodes without a matching delimiter
         nodes (iter.filter
                 (fn [n]
                   (let [x (getDelim n)]
                     (and x (= symbol
-                              (vim.treesitter.get_node_text x 0)))))
+                              (vts.get_node_text x 0)))))
                 nodes)
         ; Filter out nodes which lack a subject to swap with the delimiter
         nodes (iter.filter getSubject nodes)
@@ -95,8 +95,8 @@
     (fn [n] (tree.child n -1))
     (fn [n] (n:next_named_sibling))
     (fn [d s]
-      (let [(_ _ c d) (vim.treesitter.get_node_range d)
-            (_ _ g h) (vim.treesitter.get_node_range s)]
+      (let [(_ _ c d) (vts.get_node_range d)
+            (_ _ g h) (vts.get_node_range s)]
         [c d g h]))))
 
 (fn slurpBackward [symbol]
@@ -105,8 +105,8 @@
     (fn [n] (tree.child n 0))
     (fn [n] (n:prev_named_sibling))
     (fn [d s]
-      (let [(a b _ _) (vim.treesitter.get_node_range d)
-            (e f _ _) (vim.treesitter.get_node_range s)]
+      (let [(a b _ _) (vts.get_node_range d)
+            (e f _ _) (vts.get_node_range s)]
         [e f a b]))))
 
 (fn barfForward [symbol]
@@ -116,8 +116,8 @@
     (fn [n] (tree.namedChild n 0))
     (fn [d s]
       (let [sibling (s:next_sibling)
-            (a b _ _) (vim.treesitter.get_node_range s)
-            (e f _ _) (vim.treesitter.get_node_range sibling)]
+            (a b _ _) (vts.get_node_range s)
+            (e f _ _) (vts.get_node_range sibling)]
         [a b e f]))))
 
 (fn barfBackward [symbol]
@@ -127,8 +127,8 @@
     (fn [n] (tree.namedChild n -1))
     (fn [d s]
       (let [sibling (s:prev_sibling)
-            (_ _ c d) (vim.treesitter.get_node_range sibling)
-            (_ _ g h) (vim.treesitter.get_node_range s)]
+            (_ _ c d) (vts.get_node_range sibling)
+            (_ _ g h) (vts.get_node_range s)]
         [c d g h]))))
 
 (fn setup [opts]
