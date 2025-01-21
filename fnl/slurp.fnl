@@ -1,4 +1,5 @@
 (local ts (require "nvim-treesitter.ts_utils"))
+(local vts vim.treesitter)
 (local tree (require :tree))
 (local iter (require :iter))
 
@@ -20,19 +21,17 @@
 ; select the node of that embedded language. So if we try to outer-select a
 ; string, we might end up only selecting something inside it.
 
-(fn selectElementAtCursor []
-  (ts.update_selection 0 (vim.treesitter.get_node)))
+(fn select [nodeOrRange]
+  (ts.update_selection 0 nodeOrRange))
 
-(fn selectInsideElementAtCursor []
-  (let [n (vim.treesitter.get_node)
-        s (tree.namedChild n 0)
+(fn innerRange [n]
+  (let [s (tree.namedChild n 0)
         e (tree.namedChild n -1)]
-    (ts.update_selection 0 (if s (tree.rangeBetween s e) n))))
+    (if s (tree.rangeBetween s e) n)))
 
-(fn selectSurroundingElementAtCursor []
-  (let [n (vim.treesitter.get_node)
-        p (and n (tree.nextNamedParent n))]
-    (ts.update_selection 0 (or p n))))
+(fn surroundingNode [n]
+  (let [p (and n (tree.nextNamedParent n))]
+    (or p n)))
 
 (fn selectDelimitedElement [open close n]
   (let [n (or n (vim.treesitter.get_node))
@@ -124,13 +123,13 @@
 
   ; Element selection
   (vim.keymap.set [:v :o] "<Plug>(slurp-select-element)"
-                  selectElementAtCursor)
+                  (fn [] (select (vts.get_node))))
   (vim.keymap.set [:v :o]
                   "<Plug>(slurp-select-inside-element)"
-                  selectInsideElementAtCursor)
+                  (fn [] (select (innerRange (vts.get_node)))))
   (vim.keymap.set [:v :o]
                   "<Plug>(slurp-select-outside-element)"
-                  selectSurroundingElementAtCursor)
+                  (fn [] (select (surroundingNode (vts.get_node)))))
   (vim.keymap.set [:v :o] "<Plug>(slurp-select-(element))"
                   (fn [] (selectDelimitedElement "(" ")")))
   (vim.keymap.set [:v :o] "<Plug>(slurp-select-[element])"

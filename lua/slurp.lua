@@ -1,26 +1,22 @@
 local ts = require("nvim-treesitter.ts_utils")
+local vts = vim.treesitter
 local tree = require("tree")
 local iter = require("iter")
-local function selectElementAtCursor()
-  return ts.update_selection(0, vim.treesitter.get_node())
+local function select(nodeOrRange)
+  return ts.update_selection(0, nodeOrRange)
 end
-local function selectInsideElementAtCursor()
-  local n = vim.treesitter.get_node()
+local function innerRange(n)
   local s = tree.namedChild(n, 0)
   local e = tree.namedChild(n, -1)
-  local function _1_()
-    if s then
-      return tree.rangeBetween(s, e)
-    else
-      return n
-    end
+  if s then
+    return tree.rangeBetween(s, e)
+  else
+    return n
   end
-  return ts.update_selection(0, _1_())
 end
-local function selectSurroundingElementAtCursor()
-  local n = vim.treesitter.get_node()
+local function surroundingNode(n)
   local p = (n and tree.nextNamedParent(n))
-  return ts.update_selection(0, (p or n))
+  return (p or n)
 end
 local function selectDelimitedElement(open, close, n)
   local n0 = (n or vim.treesitter.get_node())
@@ -142,45 +138,54 @@ local function barfBackward(symbol)
   return moveDelimiter(symbol, _19_, _20_, _21_)
 end
 local function setup(opts)
-  vim.keymap.set({"v", "o"}, "<Plug>(slurp-select-element)", selectElementAtCursor)
-  vim.keymap.set({"v", "o"}, "<Plug>(slurp-select-inside-element)", selectInsideElementAtCursor)
-  vim.keymap.set({"v", "o"}, "<Plug>(slurp-select-outside-element)", selectSurroundingElementAtCursor)
   local function _22_()
+    return select(vts.get_node())
+  end
+  vim.keymap.set({"v", "o"}, "<Plug>(slurp-select-element)", _22_)
+  local function _23_()
+    return select(innerRange(vts.get_node()))
+  end
+  vim.keymap.set({"v", "o"}, "<Plug>(slurp-select-inside-element)", _23_)
+  local function _24_()
+    return select(surroundingNode(vts.get_node()))
+  end
+  vim.keymap.set({"v", "o"}, "<Plug>(slurp-select-outside-element)", _24_)
+  local function _25_()
     return selectDelimitedElement("(", ")")
   end
-  vim.keymap.set({"v", "o"}, "<Plug>(slurp-select-(element))", _22_)
-  local function _23_()
+  vim.keymap.set({"v", "o"}, "<Plug>(slurp-select-(element))", _25_)
+  local function _26_()
     return selectDelimitedElement("[", "]")
   end
-  vim.keymap.set({"v", "o"}, "<Plug>(slurp-select-[element])", _23_)
-  local function _24_()
+  vim.keymap.set({"v", "o"}, "<Plug>(slurp-select-[element])", _26_)
+  local function _27_()
     return selectDelimitedElement("{", "}")
   end
-  vim.keymap.set({"v", "o"}, "<Plug>(slurp-select-{element})", _24_)
-  local function _25_()
+  vim.keymap.set({"v", "o"}, "<Plug>(slurp-select-{element})", _27_)
+  local function _28_()
     return innerElementForward()
   end
-  vim.keymap.set({"n", "v", "o"}, "<Plug>(slurp-inner-element-forward)", _25_, {})
-  local function _26_()
+  vim.keymap.set({"n", "v", "o"}, "<Plug>(slurp-inner-element-forward)", _28_, {})
+  local function _29_()
     return outerElementForward()
   end
-  vim.keymap.set({"n", "v", "o"}, "<Plug>(slurp-outer-element-forward)", _26_, {})
-  local function _27_()
+  vim.keymap.set({"n", "v", "o"}, "<Plug>(slurp-outer-element-forward)", _29_, {})
+  local function _30_()
     return slurpForward(")")
   end
-  vim.keymap.set({"n", "v", "o"}, "<Plug>(slurp-slurp-close-paren-forward)", _27_)
-  local function _28_()
+  vim.keymap.set({"n", "v", "o"}, "<Plug>(slurp-slurp-close-paren-forward)", _30_)
+  local function _31_()
     return slurpBackward("(")
   end
-  vim.keymap.set({"n", "v", "o"}, "<Plug>(slurp-slurp-open-paren-backward)", _28_)
-  local function _29_()
+  vim.keymap.set({"n", "v", "o"}, "<Plug>(slurp-slurp-open-paren-backward)", _31_)
+  local function _32_()
     return barfForward("(")
   end
-  vim.keymap.set({"n", "v", "o"}, "<Plug>(slurp-barf-open-paren-forward)", _29_)
-  local function _30_()
+  vim.keymap.set({"n", "v", "o"}, "<Plug>(slurp-barf-open-paren-forward)", _32_)
+  local function _33_()
     return barfBackward(")")
   end
-  vim.keymap.set({"n", "v", "o"}, "<Plug>(slurp-barf-close-paren-backward)", _30_)
+  vim.keymap.set({"n", "v", "o"}, "<Plug>(slurp-barf-close-paren-backward)", _33_)
   vim.keymap.set({"v", "o"}, "<LocalLeader>ee", "<Plug>(slurp-select-element)")
   vim.keymap.set({"v", "o"}, "<LocalLeader>ie", "<Plug>(slurp-select-inside-element)")
   vim.keymap.set({"v", "o"}, "<LocalLeader>ae", "<Plug>(slurp-select-outside-element)")
@@ -195,7 +200,7 @@ local function setup(opts)
   vim.keymap.set({"n", "v", "o"}, "<LocalLeader>(h", "<Plug>(slurp-slurp-open-paren-backward)")
   vim.keymap.set({"n", "v", "o"}, "<LocalLeader>(l", "<Plug>(slurp-barf-open-paren-forward)")
   vim.keymap.set({"n", "v", "o"}, "<LocalLeader>)h", "<Plug>(slurp-barf-close-paren-backward)")
-  local function _31_()
+  local function _34_()
     vim.cmd("!make build")
     package.loaded.tree = nil
     package.loaded.iter = nil
@@ -203,6 +208,6 @@ local function setup(opts)
     vim.cmd("ConjureEvalBuf")
     return setup()
   end
-  return vim.keymap.set({"n"}, "<LocalLeader>bld", _31_, {})
+  return vim.keymap.set({"n"}, "<LocalLeader>bld", _34_, {})
 end
 return {setup = setup}
