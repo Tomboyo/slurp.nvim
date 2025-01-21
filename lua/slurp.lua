@@ -16,7 +16,7 @@ local function innerRange(n)
     if s then
       return tree.rangeBetween(s, e)
     else
-      return n
+      return tree.rangeBetween(n, n)
     end
   else
     return nil
@@ -222,19 +222,32 @@ local function setup(opts)
   local function _42_()
     return slurpForward(")")
   end
-  vim.keymap.set({"n", "v", "o"}, "<Plug>(slurp-slurp-close-paren-forward)", _42_)
+  vim.keymap.set({"n"}, "<Plug>(slurp-slurp-close-paren-forward)", _42_)
   local function _43_()
     return slurpBackward("(")
   end
-  vim.keymap.set({"n", "v", "o"}, "<Plug>(slurp-slurp-open-paren-backward)", _43_)
+  vim.keymap.set({"n"}, "<Plug>(slurp-slurp-open-paren-backward)", _43_)
   local function _44_()
     return barfForward("(")
   end
-  vim.keymap.set({"n", "v", "o"}, "<Plug>(slurp-barf-open-paren-forward)", _44_)
+  vim.keymap.set({"n"}, "<Plug>(slurp-barf-open-paren-forward)", _44_)
   local function _45_()
     return barfBackward(")")
   end
-  vim.keymap.set({"n", "v", "o"}, "<Plug>(slurp-barf-close-paren-backward)", _45_)
+  vim.keymap.set({"n"}, "<Plug>(slurp-barf-close-paren-backward)", _45_)
+  local function _46_()
+    local n = vts.get_node()
+    local p = tree.nextNamedParent(n)
+    if p then
+      local a, b, c, d = vts.get_node_range(n)
+      local e, f, g, h = vts.get_node_range(p)
+      local lines = vim.api.nvim_buf_get_text(0, a, b, c, d, {})
+      return vim.api.nvim_buf_set_text(0, e, f, g, h, lines)
+    else
+      return nil
+    end
+  end
+  vim.keymap.set({"n"}, "<Plug>(slurp-replace-parent)", _46_)
   vim.keymap.set({"v", "o"}, "<LocalLeader>ee", "<Plug>(slurp-select-element)")
   vim.keymap.set({"v", "o"}, "<LocalLeader>ie", "<Plug>(slurp-select-inside-element)")
   vim.keymap.set({"v", "o"}, "<LocalLeader>ae", "<Plug>(slurp-select-outside-element)")
@@ -251,17 +264,20 @@ local function setup(opts)
   vim.keymap.set({"v", "o"}, "<LocalLeader>al", "<Plug>(slurp-outer-list-to)")
   vim.keymap.set({"n", "v", "o"}, "w", "<Plug>(slurp-forward-into-element)")
   vim.keymap.set({"n", "v", "o"}, "W", "<Plug>(slurp-forward-over-element)")
-  vim.keymap.set({"n", "v", "o"}, "<LocalLeader>)l", "<Plug>(slurp-slurp-close-paren-forward)")
-  vim.keymap.set({"n", "v", "o"}, "<LocalLeader>(h", "<Plug>(slurp-slurp-open-paren-backward)")
-  vim.keymap.set({"n", "v", "o"}, "<LocalLeader>(l", "<Plug>(slurp-barf-open-paren-forward)")
-  vim.keymap.set({"n", "v", "o"}, "<LocalLeader>)h", "<Plug>(slurp-barf-close-paren-backward)")
-  local function _46_()
+  vim.keymap.set({"n"}, "<LocalLeader>)l", "<Plug>(slurp-slurp-close-paren-forward)")
+  vim.keymap.set({"n"}, "<LocalLeader>(h", "<Plug>(slurp-slurp-open-paren-backward)")
+  vim.keymap.set({"n"}, "<LocalLeader>(l", "<Plug>(slurp-barf-open-paren-forward)")
+  vim.keymap.set({"n"}, "<LocalLeader>)h", "<Plug>(slurp-barf-close-paren-backward)")
+  vim.keymap.set({"n"}, "<LocalLeader>o", "<Plug>(slurp-replace-parent)")
+  vim.keymap.set({"n"}, "<LocalLeader>@", "<Plug>(slurp-splice)")
+  local function _48_()
     vim.cmd("!make build")
     package.loaded.tree = nil
     package.loaded.iter = nil
+    package.loaded.strings = nil
     package.loaded.slurp = nil
     return vim.cmd("ConjureEvalBuf")
   end
-  return vim.keymap.set({"n"}, "<LocalLeader>bld", _46_, {})
+  return vim.keymap.set({"n"}, "<LocalLeader>bld", _48_, {})
 end
 return {setup = setup}

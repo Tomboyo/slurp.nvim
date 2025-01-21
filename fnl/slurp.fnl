@@ -28,7 +28,8 @@
   (if n
       (let [s (tree.namedChild n 0)
               e (tree.namedChild n -1)]
-        (if s (tree.rangeBetween s e) n))))
+        (if s (tree.rangeBetween s e)
+              (tree.rangeBetween n n)))))
 
 (fn namedParents [node]
   "An iterator over the node and its named parents."
@@ -173,19 +174,28 @@
                 (fn [] (forwardOverElement))
                 {})
   
-  ; slurp/barf (move delimiter)
-  (vim.keymap.set [:n :v :o]
+  ; manipulation
+  (vim.keymap.set [:n]
                   "<Plug>(slurp-slurp-close-paren-forward)"
                   (fn [] (slurpForward ")")))
-  (vim.keymap.set [:n :v :o]
+  (vim.keymap.set [:n]
                   "<Plug>(slurp-slurp-open-paren-backward)"
                   (fn [] (slurpBackward "(")))
-  (vim.keymap.set [:n :v :o]
-                    "<Plug>(slurp-barf-open-paren-forward)"
-                    (fn [] (barfForward "(")))
-  (vim.keymap.set [:n :v :o]
-                    "<Plug>(slurp-barf-close-paren-backward)"
-                    (fn [] (barfBackward ")")))
+  (vim.keymap.set [:n]
+                  "<Plug>(slurp-barf-open-paren-forward)"
+                  (fn [] (barfForward "(")))
+  (vim.keymap.set [:n]
+                  "<Plug>(slurp-barf-close-paren-backward)"
+                  (fn [] (barfBackward ")")))
+  (vim.keymap.set [:n]
+                  "<Plug>(slurp-replace-parent)"
+                  (fn [] (let [n (vts.get_node)
+                               p (tree.nextNamedParent n)]
+                           (if p
+                               (let [(a b c d) (vts.get_node_range n)
+                                     (e f g h) (vts.get_node_range p)
+                                     lines (vim.api.nvim_buf_get_text 0 a b c d {})]
+                           (vim.api.nvim_buf_set_text 0 e f g h lines))))))
 
   ;; Default keymaps
 
@@ -209,20 +219,26 @@
   (vim.keymap.set [:n :v :o] "w" "<Plug>(slurp-forward-into-element)")
   (vim.keymap.set [:n :v :o] "W" "<Plug>(slurp-forward-over-element)")
 
-  ; slurp/barf (move delimiter)
-  (vim.keymap.set [:n :v :o]
+  ;manipulation
+  (vim.keymap.set [:n]
                   "<LocalLeader>)l"
                   "<Plug>(slurp-slurp-close-paren-forward)")
-  (vim.keymap.set [:n :v :o]
+  (vim.keymap.set [:n]
                   "<LocalLeader>(h"
                   "<Plug>(slurp-slurp-open-paren-backward)")
-  (vim.keymap.set [:n :v :o]
+  (vim.keymap.set [:n]
                   "<LocalLeader>(l"
                   "<Plug>(slurp-barf-open-paren-forward)")
-  (vim.keymap.set [:n :v :o]
+  (vim.keymap.set [:n]
                   "<LocalLeader>)h"
                   "<Plug>(slurp-barf-close-paren-backward)")
-
+  (vim.keymap.set [:n]
+                  "<LocalLeader>o"
+                  "<Plug>(slurp-replace-parent)")
+  (vim.keymap.set [:n]
+                  "<LocalLeader>@"
+                  "<Plug>(slurp-splice)")
+  
   ; TODO: remove me (debugging keybinds)
   (vim.keymap.set [:n]
                   "<LocalLeader>bld"
@@ -230,6 +246,7 @@
                     (vim.cmd "!make build")
                     (set package.loaded.tree nil)
                     (set package.loaded.iter nil)
+                    (set package.loaded.strings nil)
                     (set package.loaded.slurp nil)
                     (vim.cmd "ConjureEvalBuf"))
                   {}))
