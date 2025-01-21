@@ -25,9 +25,10 @@
   (when nodeOrRange (ts.update_selection 0 nodeOrRange)))
 
 (fn innerRange [n]
-  (let [s (tree.namedChild n 0)
-        e (tree.namedChild n -1)]
-    (if s (tree.rangeBetween s e) n)))
+  (if n
+      (let [s (tree.namedChild n 0)
+              e (tree.namedChild n -1)]
+        (if s (tree.rangeBetween s e) n))))
 
 (fn namedParents [node]
   "An iterator over the node and its named parents."
@@ -149,6 +150,18 @@
                   (fn [] (select (findDelimitedRange "[" "]" (vts.get_node)))))
   (vim.keymap.set [:v :o] "<Plug>(slurp-select-{element})"
                   (fn [] (select (findDelimitedRange "{" "}" (vts.get_node)))))
+  (vim.keymap.set [:v :o] "<Plug>(slurp-select-inside-(element))"
+                  (fn [] (select (innerRange (findDelimitedRange "(" ")" (vts.get_node))))))
+  (vim.keymap.set [:v :o] "<Plug>(slurp-select-inside-[element])"
+                  (fn [] (select (innerRange (findDelimitedRange "[" "]" (vts.get_node))))))
+  (vim.keymap.set [:v :o] "<Plug>(slurp-select-inside-{element})"
+                  (fn [] (select (innerRange (findDelimitedRange "{" "}" (vts.get_node))))))
+  (vim.keymap.set [:v :o] "<Plug>(slurp-select-outside-(element))"
+                  (fn [] (select (surroundingNode (findDelimitedRange "(" ")" (vts.get_node))))))
+  (vim.keymap.set [:v :o] "<Plug>(slurp-select-outside-[element])"
+                  (fn [] (select (surroundingNode (findDelimitedRange "[" "]" (vts.get_node))))))
+  (vim.keymap.set [:v :o] "<Plug>(slurp-select-outside-{element})"
+                  (fn [] (select (surroundingNode (findDelimitedRange "{" "}" (vts.get_node))))))
 
   ; motion
   (vim.keymap.set [:n :v :o]
@@ -183,6 +196,12 @@
   (vim.keymap.set [:v :o] "<LocalLeader>e)" "<Plug>(slurp-select-(element))")
   (vim.keymap.set [:v :o] "<LocalLeader>e]" "<Plug>(slurp-select-[element])")
   (vim.keymap.set [:v :o] "<LocalLeader>e}" "<Plug>(slurp-select-{element})")
+  (vim.keymap.set [:v :o] "<LocalLeader>i)" "<Plug>(slurp-select-inside-(element))")
+  (vim.keymap.set [:v :o] "<LocalLeader>i]" "<Plug>(slurp-select-inside-[element])")
+  (vim.keymap.set [:v :o] "<LocalLeader>i}" "<Plug>(slurp-select-inside-{element})")
+  (vim.keymap.set [:v :o] "<LocalLeader>a)" "<Plug>(slurp-select-outside-(element))")
+  (vim.keymap.set [:v :o] "<LocalLeader>a]" "<Plug>(slurp-select-outside-[element])")
+  (vim.keymap.set [:v :o] "<LocalLeader>a}" "<Plug>(slurp-select-outside-{element})")
   (vim.keymap.set [:v :o] "<LocalLeader>il" "<Plug>(slurp-inner-list-to)")
   (vim.keymap.set [:v :o] "<LocalLeader>al" "<Plug>(slurp-outer-list-to)")
 
@@ -212,8 +231,7 @@
                     (set package.loaded.tree nil)
                     (set package.loaded.iter nil)
                     (set package.loaded.slurp nil)
-                    (vim.cmd "ConjureEvalBuf")
-                    (setup))
+                    (vim.cmd "ConjureEvalBuf"))
                   {}))
 
 ; Module
