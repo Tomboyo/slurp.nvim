@@ -45,9 +45,7 @@ local function delimitedRange(ldelim, rdelim, node)
   end
   right = iter.find(_6_, nodes)
   if (left and right) then
-    local a, b, _, _0 = vts.get_node_range(left)
-    local _1, _2, g, h = vts.get_node_range(right)
-    return {a, b, g, h}
+    return tree.rangeBetween(left, right)
   else
     return nil
   end

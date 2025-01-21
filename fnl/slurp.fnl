@@ -50,9 +50,7 @@
                 (fn [n] (= rdelim (vts.get_node_text n 0)))
                 nodes)]
     (if (and left right)
-        (let [(a b _ _) (vts.get_node_range left)
-              (_ _ g h) (vts.get_node_range right)]
-          [a b g h]))))
+        (tree.rangeBetween left right))))
 
 (fn findDelimitedRange [ldelim rdelim node]
   (iter.find
