@@ -135,7 +135,7 @@ local function barfForward(symbol)
   local function _22_(n)
     return tree.namedChild(n, 0)
   end
-  local function _23_(d, s)
+  local function _23_(_d, s)
     local sibling = s:next_sibling()
     local a, b, _, _0 = vts.get_node_range(s)
     local e, f, _1, _2 = vts.get_node_range(sibling)

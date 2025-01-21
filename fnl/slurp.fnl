@@ -114,7 +114,7 @@
     symbol
     (fn [n] (tree.child n 0))
     (fn [n] (tree.namedChild n 0))
-    (fn [d s]
+    (fn [_d s]
       (let [sibling (s:next_sibling)
             (a b _ _) (vts.get_node_range s)
             (e f _ _) (vts.get_node_range sibling)]
@@ -151,7 +151,6 @@
                   (fn [] (select (findDelimitedRange "{" "}" (vts.get_node)))))
 
   ; motion
-  ; todo: rename as into and over (like a debugger)
   (vim.keymap.set [:n :v :o]
                 "<Plug>(slurp-forward-into-element)"
                 (fn [] (forwardIntoElement))
