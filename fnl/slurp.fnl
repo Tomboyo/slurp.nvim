@@ -57,11 +57,11 @@
     (fn [n] (delimitedRange ldelim rdelim n))
     (namedParents node)))
 
-(fn innerElementForward []
+(fn forwardIntoElement []
   (let [[_ line col _] (vim.fn.getpos ".")]
     (ts.goto_node (tree.nextLexicalInnerNode (ts.get_node_at_cursor) line col))))
 
-(fn outerElementForward []
+(fn forwardOverElement []
   (let [[_ line col _] (vim.fn.getpos ".")
         node (vim.treesitter.get_node)]
     (ts.goto_node (tree.nextLexicalOuterNode node line col))))
@@ -153,12 +153,12 @@
   ; motion
   ; todo: rename as into and over (like a debugger)
   (vim.keymap.set [:n :v :o]
-                "<Plug>(slurp-inner-element-forward)"
-                (fn [] (innerElementForward))
+                "<Plug>(slurp-forward-into-element)"
+                (fn [] (forwardIntoElement))
                 {})
   (vim.keymap.set [:n :v :o]
-                "<Plug>(slurp-outer-element-forward)"
-                (fn [] (outerElementForward))
+                "<Plug>(slurp-forward-over-element)"
+                (fn [] (forwardOverElement))
                 {})
   
   ; slurp/barf (move delimiter)
@@ -188,8 +188,8 @@
   (vim.keymap.set [:v :o] "<LocalLeader>al" "<Plug>(slurp-outer-list-to)")
 
   ;motion
-  (vim.keymap.set [:n :v :o] "w" "<Plug>(slurp-inner-element-forward)")
-  (vim.keymap.set [:n :v :o] "W" "<Plug>(slurp-outer-element-forward)")
+  (vim.keymap.set [:n :v :o] "w" "<Plug>(slurp-forward-into-element)")
+  (vim.keymap.set [:n :v :o] "W" "<Plug>(slurp-forward-over-element)")
 
   ; slurp/barf (move delimiter)
   (vim.keymap.set [:n :v :o]

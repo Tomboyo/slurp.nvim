@@ -56,7 +56,7 @@ local function findDelimitedRange(ldelim, rdelim, node)
   end
   return iter.find(_8_, namedParents(node))
 end
-local function innerElementForward()
+local function forwardIntoElement()
   local _let_9_ = vim.fn.getpos(".")
   local _ = _let_9_[1]
   local line = _let_9_[2]
@@ -64,7 +64,7 @@ local function innerElementForward()
   local _0 = _let_9_[4]
   return ts.goto_node(tree.nextLexicalInnerNode(ts.get_node_at_cursor(), line, col))
 end
-local function outerElementForward()
+local function forwardOverElement()
   local _let_10_ = vim.fn.getpos(".")
   local _ = _let_10_[1]
   local line = _let_10_[2]
@@ -184,13 +184,13 @@ local function setup(opts)
   end
   vim.keymap.set({"v", "o"}, "<Plug>(slurp-select-{element})", _32_)
   local function _33_()
-    return innerElementForward()
+    return forwardIntoElement()
   end
-  vim.keymap.set({"n", "v", "o"}, "<Plug>(slurp-inner-element-forward)", _33_, {})
+  vim.keymap.set({"n", "v", "o"}, "<Plug>(slurp-forward-into-element)", _33_, {})
   local function _34_()
-    return outerElementForward()
+    return forwardOverElement()
   end
-  vim.keymap.set({"n", "v", "o"}, "<Plug>(slurp-outer-element-forward)", _34_, {})
+  vim.keymap.set({"n", "v", "o"}, "<Plug>(slurp-forward-over-element)", _34_, {})
   local function _35_()
     return slurpForward(")")
   end
@@ -215,8 +215,8 @@ local function setup(opts)
   vim.keymap.set({"v", "o"}, "<LocalLeader>e}", "<Plug>(slurp-select-{element})")
   vim.keymap.set({"v", "o"}, "<LocalLeader>il", "<Plug>(slurp-inner-list-to)")
   vim.keymap.set({"v", "o"}, "<LocalLeader>al", "<Plug>(slurp-outer-list-to)")
-  vim.keymap.set({"n", "v", "o"}, "w", "<Plug>(slurp-inner-element-forward)")
-  vim.keymap.set({"n", "v", "o"}, "W", "<Plug>(slurp-outer-element-forward)")
+  vim.keymap.set({"n", "v", "o"}, "w", "<Plug>(slurp-forward-into-element)")
+  vim.keymap.set({"n", "v", "o"}, "W", "<Plug>(slurp-forward-over-element)")
   vim.keymap.set({"n", "v", "o"}, "<LocalLeader>)l", "<Plug>(slurp-slurp-close-paren-forward)")
   vim.keymap.set({"n", "v", "o"}, "<LocalLeader>(h", "<Plug>(slurp-slurp-open-paren-backward)")
   vim.keymap.set({"n", "v", "o"}, "<LocalLeader>(l", "<Plug>(slurp-barf-open-paren-forward)")
