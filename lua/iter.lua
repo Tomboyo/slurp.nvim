@@ -29,4 +29,16 @@ m.filter = function(pred, iter)
   return f
 end
 --[[ (local ints (m.iterator (fn [i] (if i (+ i 1) 1)))) (local evens (m.filter (fn [i] (= 0 (% i 2))) ints)) (evens) (local iter (m.iterator (fn [x] (if x (if (> x 3) nil (+ 1 x)) 1)))) (local evens (m.filter (fn [i] (= 0 (% i 2))) iter)) (evens) ]]
+m.find = function(pred, iter)
+  local x = iter()
+  if (nil == x) then
+    return nil
+  else
+    if pred(x) then
+      return x
+    else
+      return m.find(pred, iter)
+    end
+  end
+end
 return m

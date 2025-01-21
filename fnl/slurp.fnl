@@ -22,27 +22,42 @@
 ; string, we might end up only selecting something inside it.
 
 (fn select [nodeOrRange]
-  (ts.update_selection 0 nodeOrRange))
+  (when nodeOrRange (ts.update_selection 0 nodeOrRange)))
 
 (fn innerRange [n]
   (let [s (tree.namedChild n 0)
         e (tree.namedChild n -1)]
     (if s (tree.rangeBetween s e) n)))
 
+(fn namedParents [node]
+  "An iterator over the node and its named parents."
+  (iter.iterator
+    (fn [n]
+      (if n 
+          (tree.nextNamedParent n)
+          (vim.treesitter.get_node)))))
+
 (fn surroundingNode [n]
   (let [p (and n (tree.nextNamedParent n))]
     (or p n)))
 
-(fn selectDelimitedElement [open close n]
-  (let [n (or n (vim.treesitter.get_node))
-        start (tree.child n 0)
-        start (and start (vim.treesitter.get_node_text start 0))
-        end (tree.child n -1)
-        end (and end (vim.treesitter.get_node_text end 0))]
-    (if (and (= open start) (= close end))
-        (ts.update_selection 0 n)
-        (let [p (tree.nextNamedParent n)]
-          (if p (selectDelimitedElement open close p))))))
+(fn delimitedRange [ldelim rdelim node]
+  (let [nodes (node:iter_children)
+        left (iter.find
+               (fn [n] (= ldelim (vts.get_node_text n 0)))
+               nodes)
+        right (iter.find
+                (fn [n] (= rdelim (vts.get_node_text n 0)))
+                nodes)]
+    (if (and left right)
+        (let [(a b _ _) (vts.get_node_range left)
+              (_ _ g h) (vts.get_node_range right)]
+          [a b g h]))))
+
+(fn findDelimitedRange [ldelim rdelim node]
+  (iter.find
+    (fn [n] (delimitedRange ldelim rdelim n))
+    (namedParents node)))
 
 (fn innerElementForward []
   (let [[_ line col _] (vim.fn.getpos ".")]
@@ -131,11 +146,11 @@
                   "<Plug>(slurp-select-outside-element)"
                   (fn [] (select (surroundingNode (vts.get_node)))))
   (vim.keymap.set [:v :o] "<Plug>(slurp-select-(element))"
-                  (fn [] (selectDelimitedElement "(" ")")))
+                  (fn [] (select (findDelimitedRange "(" ")" (vts.get_node)))))
   (vim.keymap.set [:v :o] "<Plug>(slurp-select-[element])"
-                  (fn [] (selectDelimitedElement "[" "]")))
+                  (fn [] (select (findDelimitedRange "[" "]" (vts.get_node)))))
   (vim.keymap.set [:v :o] "<Plug>(slurp-select-{element})"
-                  (fn [] (selectDelimitedElement "{" "}")))
+                  (fn [] (select (findDelimitedRange "{" "}" (vts.get_node)))))
 
   ; motion
   ; todo: rename as into and over (like a debugger)

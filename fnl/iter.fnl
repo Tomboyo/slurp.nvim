@@ -43,4 +43,12 @@
   (local evens (m.filter (fn [i] (= 0 (% i 2))) iter))
   (evens))
 
+(fn m.find [pred iter]
+  (let [x (iter)]
+    (if (= nil x)
+        nil
+        (if (pred x)
+            x
+            (m.find pred iter)))))
+
 m
