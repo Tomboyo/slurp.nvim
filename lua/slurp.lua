@@ -23,7 +23,7 @@ local function namedParents(node)
     if n then
       return tree.nextNamedParent(n)
     else
-      return vim.treesitter.get_node()
+      return node
     end
   end
   return iter.iterator(_3_)

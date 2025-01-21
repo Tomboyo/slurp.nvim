@@ -35,7 +35,7 @@
     (fn [n]
       (if n 
           (tree.nextNamedParent n)
-          (vim.treesitter.get_node)))))
+          node))))
 
 (fn surroundingNode [n]
   (let [p (and n (tree.nextNamedParent n))]
