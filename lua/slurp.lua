@@ -248,6 +248,19 @@ local function setup(opts)
     end
   end
   vim.keymap.set({"n"}, "<Plug>(slurp-replace-parent)", _46_)
+  local function _48_()
+    vim.print("delete surrounding ()")
+    local p = findDelimitedRange("(", ")", vts.get_node())
+    local _let_49_ = innerRange(p)
+    local a = _let_49_[1]
+    local b = _let_49_[2]
+    local c = _let_49_[3]
+    local d = _let_49_[4]
+    local lines = vim.api.nvim_buf_get_text(0, a, b, c, d, {})
+    local e, f, g, h = vts.get_node_range(p)
+    return vim.api.nvim_buf_set_text(0, e, f, g, h, lines)
+  end
+  vim.keymap.set({"n"}, "<Plug>(slurp-delete-surrounding-())", _48_)
   vim.keymap.set({"v", "o"}, "<LocalLeader>ee", "<Plug>(slurp-select-element)")
   vim.keymap.set({"v", "o"}, "<LocalLeader>ie", "<Plug>(slurp-select-inside-element)")
   vim.keymap.set({"v", "o"}, "<LocalLeader>ae", "<Plug>(slurp-select-outside-element)")
@@ -269,15 +282,16 @@ local function setup(opts)
   vim.keymap.set({"n"}, "<LocalLeader>(l", "<Plug>(slurp-barf-open-paren-forward)")
   vim.keymap.set({"n"}, "<LocalLeader>)h", "<Plug>(slurp-barf-close-paren-backward)")
   vim.keymap.set({"n"}, "<LocalLeader>o", "<Plug>(slurp-replace-parent)")
-  vim.keymap.set({"n"}, "<LocalLeader>@", "<Plug>(slurp-splice)")
-  local function _48_()
+  vim.keymap.set({"n"}, "<LocalLeader>@)", "<Plug>(slurp-delete-surrounding-())")
+  local function _50_()
     vim.cmd("!make build")
     package.loaded.tree = nil
     package.loaded.iter = nil
     package.loaded.strings = nil
+    package.loaded.opfunc = nil
     package.loaded.slurp = nil
     return vim.cmd("ConjureEvalBuf")
   end
-  return vim.keymap.set({"n"}, "<LocalLeader>bld", _48_, {})
+  return vim.keymap.set({"n"}, "<LocalLeader>bld", _50_, {})
 end
 return {setup = setup}

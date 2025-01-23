@@ -196,6 +196,15 @@
                                      (e f g h) (vts.get_node_range p)
                                      lines (vim.api.nvim_buf_get_text 0 a b c d {})]
                            (vim.api.nvim_buf_set_text 0 e f g h lines))))))
+  (vim.keymap.set [:n]
+                  "<Plug>(slurp-delete-surrounding-())"
+                  (fn []
+                    (vim.print "delete surrounding ()")
+                    (let [p (findDelimitedRange "(" ")" (vts.get_node))
+                          [a b c d] (innerRange p)
+                          lines (vim.api.nvim_buf_get_text 0 a b c d {})
+                          (e f g h) (vts.get_node_range p)]
+                      (vim.api.nvim_buf_set_text 0 e f g h lines))))
 
   ;; Default keymaps
 
@@ -236,9 +245,9 @@
                   "<LocalLeader>o"
                   "<Plug>(slurp-replace-parent)")
   (vim.keymap.set [:n]
-                  "<LocalLeader>@"
-                  "<Plug>(slurp-splice)")
-  
+                  "<LocalLeader>@)"
+                  "<Plug>(slurp-delete-surrounding-())")
+ 
   ; TODO: remove me (debugging keybinds)
   (vim.keymap.set [:n]
                   "<LocalLeader>bld"
@@ -247,6 +256,7 @@
                     (set package.loaded.tree nil)
                     (set package.loaded.iter nil)
                     (set package.loaded.strings nil)
+                    (set package.loaded.opfunc nil)
                     (set package.loaded.slurp nil)
                     (vim.cmd "ConjureEvalBuf"))
                   {}))
