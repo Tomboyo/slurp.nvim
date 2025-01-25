@@ -15,6 +15,6 @@ ${DST_DIR}:
 	mkdir ${DST_DIR}
 
 # Compile fnl to lua
-lua/%.lua: fnl/%.fnl ${DST_DIR}
+${DST_DIR}/%.lua: fnl/%.fnl ${DST_DIR}
 	$(FNL) --compile $< > $@
 
