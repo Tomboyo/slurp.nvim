@@ -1,0 +1,5 @@
+describe("Busted unit testing framework", function()
+  it("is working", function()
+    assert.truthy("Yes")
+  end)
+end)
