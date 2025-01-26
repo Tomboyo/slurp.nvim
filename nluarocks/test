@@ -3,9 +3,9 @@
 set -euxo pipefail
 
 # root directory of slurp.nvim project
-DIR=$(dirname $(realpath $0))
+DIR=$(dirname $(dirname $(realpath $0)))
 
 # Mount slurp.nvim into /app and invoke luarocks test
-podman build --tag "nluarocks" -f "${DIR}/nluarocks.containerfile"
+podman build --tag "nluarocks" "$DIR/nluarocks"
 podman run -v "${DIR}:/app:ro,Z" "nluarocks" sh -c "luarocks test"
 

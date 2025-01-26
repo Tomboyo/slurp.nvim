@@ -3,12 +3,15 @@ DST_DIR := lua
 DST := $(patsubst fnl/%,${DST_DIR}/%,$(patsubst %.fnl,%.lua,$(SRC)))
 FNL := ./fennel-1.5.0
 
-.PHONY: build clean
+.PHONY: build clean test
 
 clean:
 	rm -rf ./${DST_DIR}
 
 build: $(DST)
+
+test: build
+	nluarocks/test
 
 # Create the lua output directory if it doesn't exist
 ${DST_DIR}:
