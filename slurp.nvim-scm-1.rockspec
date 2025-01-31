@@ -13,6 +13,5 @@ source = {
 }
 
 build = {
-  -- TODO, needs to be make since fnl
   type = 'builtin',
 }

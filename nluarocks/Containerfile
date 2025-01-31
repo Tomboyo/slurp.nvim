@@ -1,11 +1,20 @@
 FROM ubuntu:25.04
 
 RUN apt-get update \
-    && apt-get install -y lua5.1 luarocks neovim \
+    && apt-get install -y lua5.1 luarocks neovim git \
     && luarocks install nlua \
     && luarocks install busted
 
-RUN mkdir /app
+RUN mkdir /app /appdata
 
 WORKDIR /app
+
+COPY slurp.nvim-scm-1.rockspec .busted .
+COPY plugin/ plugin/
+COPY lua/ lua/
+COPY spec/ spec/
+
+RUN ls -al
+
+COPY --chmod=744 nluarocks/init ./nluarocks/init
 

@@ -1,0 +1,7 @@
+This directory is a docker volume used to keep nvim plugin data around between
+`make test` runs. It is empty when checked out from git, and becomes nonempty
+after calling `make test` for the first time.
+
+If test state seems odd, you can safely delete the untracked contents of this
+directory tree and try running `make test` again.
+

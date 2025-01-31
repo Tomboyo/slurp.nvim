@@ -1,0 +1,24 @@
+#!/bin/bash
+#
+# Container test harness script.
+#
+# /app is assumed to be where this repo is mounted in the container.
+# /appdata is assumed to be where XDG data/state/etc folders and files are
+#   mounted into the container.
+
+set -euxo pipefail
+
+# Install the plugin (/app) using a symlink
+mkdir -p "$XDG_DATA_HOME/nvim/site/pack/slurp.nvim"
+ln -s /app "$XDG_DATA_HOME/nvim/site/pack/slurp.nvim/start"
+
+# Configure and setup dependencies
+mkdir -p "$XDG_CONFIG_HOME/nvim/autoload"
+if [[ ! -f "$XDG_CONFIG_HOME/nvim/autoload/plug.vim" ]]
+then
+  wget 'https://raw.githubusercontent.com/junegunn/vim-plug/master/plug.vim' \
+    -O "$XDG_CONFIG_HOME/nvim/autoload/plug.vim"
+fi
+cp "/app/spec/init.vim" "$XDG_CONFIG_HOME/nvim/init.vim"
+nvim --headless -c "PlugInstall" -c "TSUpdateSync fennel" -c qa
+
