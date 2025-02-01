@@ -13,8 +13,6 @@ COPY slurp.nvim-scm-1.rockspec .busted .
 COPY plugin/ plugin/
 COPY lua/ lua/
 COPY spec/ spec/
-
-RUN ls -al
-
+COPY src/spec/init.vim spec/init.vim
 COPY --chmod=744 nluarocks/init ./nluarocks/init
 
