@@ -20,10 +20,10 @@ spec_lua := $(patsubst \
 info:
 	$(info $$main_source_dir is [${main_source_dir}])
 	$(info $$spec_source_dir is [${spec_source_dir}])
-	$(info $$main_lua is [${main_lua}])
-	$(info $$spec_lua is [${spec_lua}])
 	$(info $$main_source is [${main_source}])
 	$(info $$spec_source is [${spec_source}])
+	$(info $$main_lua is [${main_lua}])
+	$(info $$spec_lua is [${spec_lua}])
 
 clean:
 	rm -rf ${main_lua_dir}
