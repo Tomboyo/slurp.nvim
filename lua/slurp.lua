@@ -259,39 +259,4 @@ local function _48_()
   local e, f, g, h = vts.get_node_range(p)
   return vim.api.nvim_buf_set_text(0, e, f, g, h, lines)
 end
-vim.keymap.set({"n"}, "<Plug>(slurp-delete-surrounding-())", _48_)
-local function setup(opts)
-  vim.keymap.set({"v", "o"}, "<LocalLeader>ee", "<Plug>(slurp-select-element)")
-  vim.keymap.set({"v", "o"}, "<LocalLeader>ie", "<Plug>(slurp-select-inside-element)")
-  vim.keymap.set({"v", "o"}, "<LocalLeader>ae", "<Plug>(slurp-select-outside-element)")
-  vim.keymap.set({"v", "o"}, "<LocalLeader>e)", "<Plug>(slurp-select-(element))")
-  vim.keymap.set({"v", "o"}, "<LocalLeader>e]", "<Plug>(slurp-select-[element])")
-  vim.keymap.set({"v", "o"}, "<LocalLeader>e}", "<Plug>(slurp-select-{element})")
-  vim.keymap.set({"v", "o"}, "<LocalLeader>i)", "<Plug>(slurp-select-inside-(element))")
-  vim.keymap.set({"v", "o"}, "<LocalLeader>i]", "<Plug>(slurp-select-inside-[element])")
-  vim.keymap.set({"v", "o"}, "<LocalLeader>i}", "<Plug>(slurp-select-inside-{element})")
-  vim.keymap.set({"v", "o"}, "<LocalLeader>a)", "<Plug>(slurp-select-outside-(element))")
-  vim.keymap.set({"v", "o"}, "<LocalLeader>a]", "<Plug>(slurp-select-outside-[element])")
-  vim.keymap.set({"v", "o"}, "<LocalLeader>a}", "<Plug>(slurp-select-outside-{element})")
-  vim.keymap.set({"v", "o"}, "<LocalLeader>il", "<Plug>(slurp-inner-list-to)")
-  vim.keymap.set({"v", "o"}, "<LocalLeader>al", "<Plug>(slurp-outer-list-to)")
-  vim.keymap.set({"n", "v", "o"}, "w", "<Plug>(slurp-forward-into-element)")
-  vim.keymap.set({"n", "v", "o"}, "W", "<Plug>(slurp-forward-over-element)")
-  vim.keymap.set({"n"}, "<LocalLeader>)l", "<Plug>(slurp-slurp-close-paren-forward)")
-  vim.keymap.set({"n"}, "<LocalLeader>(h", "<Plug>(slurp-slurp-open-paren-backward)")
-  vim.keymap.set({"n"}, "<LocalLeader>(l", "<Plug>(slurp-barf-open-paren-forward)")
-  vim.keymap.set({"n"}, "<LocalLeader>)h", "<Plug>(slurp-barf-close-paren-backward)")
-  vim.keymap.set({"n"}, "<LocalLeader>o", "<Plug>(slurp-replace-parent)")
-  vim.keymap.set({"n"}, "<LocalLeader>@)", "<Plug>(slurp-delete-surrounding-())")
-  local function _50_()
-    vim.cmd("!make build")
-    package.loaded.tree = nil
-    package.loaded.iter = nil
-    package.loaded.strings = nil
-    package.loaded.opfunc = nil
-    package.loaded.slurp = nil
-    return vim.cmd("ConjureEvalBuf")
-  end
-  return vim.keymap.set({"n"}, "<LocalLeader>bld", _50_, {})
-end
-return {setup = setup}
+return vim.keymap.set({"n"}, "<Plug>(slurp-delete-surrounding-())", _48_)
