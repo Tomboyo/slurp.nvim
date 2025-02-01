@@ -35,6 +35,9 @@ clean:
 
 compile: ${main_lua_dir} ${main_lua}
 
+# Note: Though we use busted for testing and busted has a fennel loader, busted
+# hasn't released to luarocks since 2023, so we can't use it without running
+# busted from source, which would defeat the purpose of using luarocks anyway.
 test-compile: ${spec_lua_dir} ${spec_lua}
 
 test: compile test-compile
