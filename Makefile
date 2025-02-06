@@ -1,5 +1,5 @@
 root := $(patsubst %/,%,$(dir $(abspath $(lastword $(MAKEFILE_LIST)))))
-fennel := ./fennel-1.5.0
+fennel := ./fennel-1.5.1
 main_source_dir := src/main/fnl
 spec_source_dir := src/spec/fnl
 main_source := $(shell find ${main_source_dir}/ -type f -name '*.fnl')
