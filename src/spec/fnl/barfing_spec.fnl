@@ -15,47 +15,47 @@
 (local slurp (require :slurp))
 
 (describe
-  "slurpForward"
+  "barfForward"
   (var buf nil)
   (before_each
     (set buf (vim.api.nvim_create_buf false true)))
   (after_each
     (vim.api.nvim_buf_delete buf {}))
   (it
-    "swaps the closing delimiter with the sibling to the right"
-    (nvim.setup buf ["(foo (bar (baz) bang) whizz)"] [1 12])
-    (slurp.slurpForward ")")
+    "swaps the opening delimiter with the last child"
+    (nvim.setup buf ["(foo (bar baz) bang)"] [1 9])
+    (slurp.barfForward "(")
     (assert.is.equal
-      "(foo (bar (baz bang)) whizz)"
+      "(foo bar (baz) bang)"
       (nvim.actual buf)))
   (it
     "is recursive"
-    (nvim.setup buf ["(foo (bar (baz)) bang)"] [1 12])
-    (slurp.slurpForward ")")
+    (nvim.setup buf ["(foo (bar ()) baz)"] [1 11])
+    (slurp.barfForward "(")
     (assert.is.equal
-      "(foo (bar (baz) bang))"
+      "(foo bar (()) baz)"
       (nvim.actual buf))))
 
 (describe
-  "slurpBackward"
+  "barfBackward"
   (var buf nil)
   (before_each
     (set buf (vim.api.nvim_create_buf false true)))
   (after_each
     (vim.api.nvim_buf_delete buf {}))
   (it
-    "swaps the opening delimiter with the sibling to the left"
-    (nvim.setup buf ["(foo (bar (baz) bang) whizz)"] [1 12])
-    (slurp.slurpBackward "(")
+    "swaps the closing delimiter with the last child"
+    (nvim.setup buf ["(foo (bar baz) bang)"] [1 9])
+    (slurp.barfBackward ")")
     (assert.is.equal
-      "(foo ((bar baz) bang) whizz)"
+      "(foo (bar) baz bang)"
       (nvim.actual buf)))
   (it
     "is recursive"
-    (nvim.setup buf ["(foo ((bar) baz) bang)"] [1 8])
-    (slurp.slurpBackward "(")
+    (nvim.setup buf ["(foo (() bar) baz)"] [1 6])
+    (slurp.barfBackward ")")
     (assert.is.equal
-      "((foo (bar) baz) bang)"
+      "(foo (()) bar baz)"
       (nvim.actual buf))))
 
 nil

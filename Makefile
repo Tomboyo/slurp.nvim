@@ -14,8 +14,9 @@ spec_lua := $(patsubst \
   ${spec_source_dir}/%, \
 	${spec_lua_dir}/%, \
 	$(patsubst %.fnl,%.lua,$(spec_source)))
+nvim_instance_dir := ./.nvim
 
-.PHONY: clean compile test-compile test info
+.PHONY: clean compile test-compile test-setup test info
 
 info:
 	$(info $$main_source_dir is [${main_source_dir}])
@@ -28,53 +29,32 @@ info:
 clean:
 	rm -rf ${main_lua_dir}
 	rm -rf ${spec_lua_dir}
-	rm -rf ./.container-volume/config/nvim
-	rm -rf ./.container-volume/data/nvim
-	rm -rf ./.container-volume/state/nvim
-	rm -rf ./.container-volume/cache/nvim
+	rm -rf ./.nvim
 
-compile: ${main_lua_dir} ${main_lua}
+compile: ${main_lua}
 
 # Note: Though we use busted for testing and busted has a fennel loader, busted
 # hasn't released to luarocks since 2023, so we can't use it without running
 # busted from source, which would defeat the purpose of using luarocks anyway.
-test-compile: ${spec_lua_dir} ${spec_lua}
+test-compile: compile ${spec_lua}
 
-test: compile test-compile
-	podman build --tag "nluarocks" -f "${root}/nluarocks/Containerfile" "${root}"
-	podman run \
-    -v "${root}/.container-volume:/appdata:Z" \
-    -e "XDG_CONFIG_HOME=/appdata/config" \
-    -e "XDG_CACHE_HOME=/appdata/cache" \
-    -e "XDG_DATA_HOME=/appdata/data" \
-    -e "XDG_STATE_HOME=/appdata/state" \
-    -e "XDG_LOG_FILE=/appdata/log" \
-    "nluarocks" \
-    sh -c "./nluarocks/init && luarocks test"
+test-setup:
+	./scripts/test-setup
 
-debug: compile test-compile
-	podman build --tag "nluarocks" -f "${root}/nluarocks/Containerfile" "${root}"
-	podman run \
-		-it \
-    -v "${root}/.container-volume:/appdata:Z" \
-    -e "XDG_CONFIG_HOME=/appdata/config" \
-    -e "XDG_CACHE_HOME=/appdata/cache" \
-    -e "XDG_DATA_HOME=/appdata/data" \
-    -e "XDG_STATE_HOME=/appdata/state" \
-    -e "XDG_LOG_FILE=/appdata/log" \
-    "nluarocks" \
-		sh -c "./nluarocks/init && /bin/bash"
-
-${main_lua_dir}:
-	mkdir ${main_lua_dir}
-
-${spec_lua_dir}:
-	mkdir ${spec_lua_dir}
+test: compile test-compile test-setup
+	./scripts/test "${root}/${spec_lua_dir}/?.lua"
 
 # Compile fnl to lua
+# fennel path used so absolute imports resolve correctly (relative to
+# src/main/fnl)
 lua/%.lua: src/main/fnl/%.fnl
-	${fennel} --compile $< > $@
+	@mkdir -p $(@D)
+	${fennel} --add-fennel-path "${main_source_dir}/?.fnl" \
+						--compile $< > $@
 
 spec/%.lua: src/spec/fnl/%.fnl
-	${fennel} --compile $< > $@
+	@mkdir -p $(@D)
+	${fennel} --add-fennel-path "${main_source_dir}/?.fnl" \
+		        --add-fennel-path "${spec_source_dir}/?.fnl" \
+						--compile $< > $@
 

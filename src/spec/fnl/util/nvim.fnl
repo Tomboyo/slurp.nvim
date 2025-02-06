@@ -1,30 +1,14 @@
 (local m {})
 
-(fn m.setup [nvim lines pos]
-  (vim.rpcrequest nvim :nvim_buf_set_lines 0 0 1 false lines)
-  (vim.rpcrequest nvim
-                  :nvim_set_option_value
-                  :filetype
-                  :fennel
-                  {})
-  (vim.rpcrequest nvim
-                  :nvim_exec_lua
-                  "vim.treesitter.start()"
-                  {})
-  (vim.rpcrequest nvim
-                  :nvim_win_set_cursor
-                  0
-                  pos))
+(fn m.setup [buf lines pos]
+  (vim.api.nvim_set_current_buf buf)
+  (vim.api.nvim_buf_set_lines buf 0 1 false lines)
+  (vim.api.nvim_set_option_value :filetype :fennel {})
+  (vim.api.nvim_exec2 "lua vim.treesitter.start()" {})
+  (vim.api.nvim_win_set_cursor 0 pos)
+  buf)
 
-(fn m.plug [nvim mapping]
-  (vim.rpcrequest
-    nvim
-    :nvim_feedkeys
-    (vim.api.nvim_replace_termcodes mapping true true true)
-    :m
-    false))
-
-(fn m.actual [nvim]
-  (. (vim.rpcrequest nvim :nvim_buf_get_lines 0 0 1 true) 1))
+(fn m.actual [buf]
+  (. (vim.api.nvim_buf_get_lines buf 0 1 true) 1))
 
 m

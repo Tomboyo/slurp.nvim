@@ -259,4 +259,5 @@ local function _48_()
   local e, f, g, h = vts.get_node_range(p)
   return vim.api.nvim_buf_set_text(0, e, f, g, h, lines)
 end
-return vim.keymap.set({"n"}, "<Plug>(slurp-delete-surrounding-())", _48_)
+vim.keymap.set({"n"}, "<Plug>(slurp-delete-surrounding-())", _48_)
+return {slurpForward = slurpForward, slurpBackward = slurpBackward, barfForward = barfForward, barfBackward = barfBackward}

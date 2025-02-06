@@ -22,21 +22,21 @@ do
     do
       local b_2_auto0 = require("plenary.busted")
       local function _4_()
-        nvim.setup(buf, {"(foo (bar (baz) bang) whizz)"}, {1, 12})
-        slurp.slurpForward(")")
-        return assert.is.equal("(foo (bar (baz bang)) whizz)", nvim.actual(buf))
+        nvim.setup(buf, {"(foo (bar baz) bang)"}, {1, 9})
+        slurp.barfForward("(")
+        return assert.is.equal("(foo bar (baz) bang)", nvim.actual(buf))
       end
-      b_2_auto0.it("swaps the closing delimiter with the sibling to the right", _4_)
+      b_2_auto0.it("swaps the opening delimiter with the last child", _4_)
     end
     local b_2_auto0 = require("plenary.busted")
     local function _5_()
-      nvim.setup(buf, {"(foo (bar (baz)) bang)"}, {1, 12})
-      slurp.slurpForward(")")
-      return assert.is.equal("(foo (bar (baz) bang))", nvim.actual(buf))
+      nvim.setup(buf, {"(foo (bar ()) baz)"}, {1, 11})
+      slurp.barfForward("(")
+      return assert.is.equal("(foo bar (()) baz)", nvim.actual(buf))
     end
     return b_2_auto0.it("is recursive", _5_)
   end
-  b_2_auto.describe("slurpForward", _1_)
+  b_2_auto.describe("barfForward", _1_)
 end
 do
   local b_2_auto = require("plenary.busted")
@@ -60,20 +60,20 @@ do
     do
       local b_2_auto0 = require("plenary.busted")
       local function _9_()
-        nvim.setup(buf, {"(foo (bar (baz) bang) whizz)"}, {1, 12})
-        slurp.slurpBackward("(")
-        return assert.is.equal("(foo ((bar baz) bang) whizz)", nvim.actual(buf))
+        nvim.setup(buf, {"(foo (bar baz) bang)"}, {1, 9})
+        slurp.barfBackward(")")
+        return assert.is.equal("(foo (bar) baz bang)", nvim.actual(buf))
       end
-      b_2_auto0.it("swaps the opening delimiter with the sibling to the left", _9_)
+      b_2_auto0.it("swaps the closing delimiter with the last child", _9_)
     end
     local b_2_auto0 = require("plenary.busted")
     local function _10_()
-      nvim.setup(buf, {"(foo ((bar) baz) bang)"}, {1, 8})
-      slurp.slurpBackward("(")
-      return assert.is.equal("((foo (bar) baz) bang)", nvim.actual(buf))
+      nvim.setup(buf, {"(foo (() bar) baz)"}, {1, 6})
+      slurp.barfBackward(")")
+      return assert.is.equal("(foo (()) bar baz)", nvim.actual(buf))
     end
     return b_2_auto0.it("is recursive", _10_)
   end
-  b_2_auto.describe("slurpBackward", _6_)
+  b_2_auto.describe("barfBackward", _6_)
 end
 return nil

@@ -205,3 +205,7 @@
                         (e f g h) (vts.get_node_range p)]
                     (vim.api.nvim_buf_set_text 0 e f g h lines))))
 
+{:slurpForward slurpForward
+ :slurpBackward slurpBackward
+ :barfForward barfForward
+ :barfBackward barfBackward}

@@ -1,0 +1,14 @@
+#!/usr/bin/env bash
+
+set -euo pipefail
+
+here=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
+root=$(dirname $here)
+nvim_env="$root/.nvim"
+export XDG_CONFIG_HOME="$nvim_env/config"
+export XDG_CACHE_HOME="$nvim_env/cache"
+export XDG_DATA_HOME="$nvim_env/data"
+export XDG_STATE_HOME="$nvim_env/state"
+export XDG_LOG_FILE="$nvim_env/log"
+export PLUGINS="$XDG_DATA_HOME/nvim/site/pack/test/start"
+

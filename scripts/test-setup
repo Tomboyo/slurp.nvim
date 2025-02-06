@@ -1,0 +1,50 @@
+#!/usr/bin/env bash
+#
+# Prepare the test environment.
+
+set -euo pipefail
+
+here=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
+root=$(dirname $here)
+. $here/env
+
+mkdir -p \
+  "$XDG_CONFIG_HOME/nvim" \
+  $XDG_CACHE_HOME \
+  $XDG_DATA_HOME \
+  $XDG_STATE_HOME
+
+# Install nvim configuration
+cp $root/src/spec/init.vim $XDG_CONFIG_HOME/nvim/init.vim
+
+# Install our plugin
+plugin_mnt="$PLUGINS/slurp.nvim"
+mkdir -p $(dirname $plugin_mnt)
+if [[ ! -e $plugin_mnt ]]
+then
+  ln -s $root $plugin_mnt
+fi
+
+function install_gh_plugin {
+  spec=$1
+  # split around "/". See https://stackoverflow.com/a/5257398
+  parts=(${spec//// })
+  # Must not end with / or git will clone into a subdir
+  dest="$PLUGINS/${parts[0]}.${parts[1]}"
+  if [[ -e $dest ]]
+  then
+    echo "$spec already installed"
+  else
+    mkdir -p $(dirname $dest)
+    url="https://github.com/$spec"
+    echo "cloning $url into $dest"
+    git clone $url $dest
+  fi
+}
+
+install_gh_plugin nvim-treesitter/nvim-treesitter
+install_gh_plugin nvim-lua/plenary.nvim 
+
+# Install test dependencies
+nvim --headless -c "TSUpdateSync fennel" -c qa
+
