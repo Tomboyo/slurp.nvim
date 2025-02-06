@@ -133,6 +133,15 @@
             (_ _ g h) (vts.get_node_range s)]
         [c d g h]))))
 
+(fn replaceParent []
+  (let [n (vts.get_node)
+        p (tree.nextNamedParent n)]
+    (if p
+        (let [(a b c d) (vts.get_node_range n)
+              (e f g h) (vts.get_node_range p)
+              lines (vim.api.nvim_buf_get_text 0 a b c d {})]
+          (vim.api.nvim_buf_set_text 0 e f g h lines)))))
+
 
 ;; Plug maps
 ; Element selection
@@ -197,15 +206,10 @@
                          (vim.api.nvim_buf_set_text 0 e f g h lines))))))
 (vim.keymap.set [:n]
                 "<Plug>(slurp-delete-surrounding-())"
-                (fn []
-                  (vim.print "delete surrounding ()")
-                  (let [p (findDelimitedRange "(" ")" (vts.get_node))
-                        [a b c d] (innerRange p)
-                        lines (vim.api.nvim_buf_get_text 0 a b c d {})
-                        (e f g h) (vts.get_node_range p)]
-                    (vim.api.nvim_buf_set_text 0 e f g h lines))))
+                replaceParent)
 
 {:slurpForward slurpForward
  :slurpBackward slurpBackward
  :barfForward barfForward
- :barfBackward barfBackward}
+ :barfBackward barfBackward
+ :replaceParent replaceParent}
