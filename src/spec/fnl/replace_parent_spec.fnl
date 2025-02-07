@@ -23,14 +23,14 @@
     (vim.api.nvim_buf_delete buf {}))
   (it
     "replaces the parent element with the one under the cursor"
-    (nvim.setup buf ["(foo bar baz)"] [1 6])
+    (nvim.setup buf ["(foo b|ar baz)"])
     (slurp.replaceParent)
     (assert.is.equal
       "bar"
       (nvim.actual buf)))
   (it
     "works across lines"
-    (nvim.setup buf ["(foo" "bar" "baz)"] [2 1])
+    (nvim.setup buf ["(foo" "b|ar" "baz)"])
     (slurp.replaceParent)
     (assert.is.equal
       "bar"

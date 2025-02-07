@@ -23,14 +23,14 @@
     (vim.api.nvim_buf_delete buf {}))
   (it
     "splices the content of a node into its parent"
-    (nvim.setup buf ["(foo (bar baz) baz)"] [1 7])
+    (nvim.setup buf ["(foo (b|ar baz) baz)"])
     (slurp.unwrap "(" ")")
     (assert.is.equal
       "(foo bar baz baz)"
       (nvim.actual buf)))
   (it
     "works with arbitrary delimiters (that are grammatically correct)"
-    (nvim.setup buf ["(foo [bar baz] bang)"] [1 7])
+    (nvim.setup buf ["(foo [b|ar baz] bang)"])
     (slurp.unwrap "[" "]")
     (assert.is.equal
       "(foo bar baz bang)"

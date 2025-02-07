@@ -23,14 +23,14 @@
     (vim.api.nvim_buf_delete buf {}))
   (it
     "swaps the closing delimiter with the sibling to the right"
-    (nvim.setup buf ["(foo (bar (baz) bang) whizz)"] [1 12])
+    (nvim.setup buf ["(foo (bar (b|az) bang) whizz)"])
     (slurp.slurpForward ")")
     (assert.is.equal
       "(foo (bar (baz bang)) whizz)"
       (nvim.actual buf)))
   (it
     "is recursive"
-    (nvim.setup buf ["(foo (bar (baz)) bang)"] [1 12])
+    (nvim.setup buf ["(foo (bar (b|az)) bang)"])
     (slurp.slurpForward ")")
     (assert.is.equal
       "(foo (bar (baz) bang))"
@@ -45,14 +45,14 @@
     (vim.api.nvim_buf_delete buf {}))
   (it
     "swaps the opening delimiter with the sibling to the left"
-    (nvim.setup buf ["(foo (bar (baz) bang) whizz)"] [1 12])
+    (nvim.setup buf ["(foo (bar (b|az) bang) whizz)"])
     (slurp.slurpBackward "(")
     (assert.is.equal
       "(foo ((bar baz) bang) whizz)"
       (nvim.actual buf)))
   (it
     "is recursive"
-    (nvim.setup buf ["(foo ((bar) baz) bang)"] [1 8])
+    (nvim.setup buf ["(foo ((b|ar) baz) bang)"])
     (slurp.slurpBackward "(")
     (assert.is.equal
       "((foo (bar) baz) bang)"

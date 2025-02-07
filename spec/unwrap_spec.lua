@@ -22,7 +22,7 @@ do
     do
       local b_2_auto0 = require("plenary.busted")
       local function _4_()
-        nvim.setup(buf, {"(foo (bar baz) baz)"}, {1, 7})
+        nvim.setup(buf, {"(foo (b|ar baz) baz)"})
         slurp.unwrap("(", ")")
         return assert.is.equal("(foo bar baz baz)", nvim.actual(buf))
       end
@@ -30,7 +30,7 @@ do
     end
     local b_2_auto0 = require("plenary.busted")
     local function _5_()
-      nvim.setup(buf, {"(foo [bar baz] bang)"}, {1, 7})
+      nvim.setup(buf, {"(foo [b|ar baz] bang)"})
       slurp.unwrap("[", "]")
       return assert.is.equal("(foo bar baz bang)", nvim.actual(buf))
     end

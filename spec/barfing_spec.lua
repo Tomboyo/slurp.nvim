@@ -22,7 +22,7 @@ do
     do
       local b_2_auto0 = require("plenary.busted")
       local function _4_()
-        nvim.setup(buf, {"(foo (bar baz) bang)"}, {1, 9})
+        nvim.setup(buf, {"(foo (bar| baz) bang)"})
         slurp.barfForward("(")
         return assert.is.equal("(foo bar (baz) bang)", nvim.actual(buf))
       end
@@ -30,7 +30,7 @@ do
     end
     local b_2_auto0 = require("plenary.busted")
     local function _5_()
-      nvim.setup(buf, {"(foo (bar ()) baz)"}, {1, 11})
+      nvim.setup(buf, {"(foo (bar (|)) baz)"})
       slurp.barfForward("(")
       return assert.is.equal("(foo bar (()) baz)", nvim.actual(buf))
     end
@@ -60,7 +60,7 @@ do
     do
       local b_2_auto0 = require("plenary.busted")
       local function _9_()
-        nvim.setup(buf, {"(foo (bar baz) bang)"}, {1, 9})
+        nvim.setup(buf, {"(foo (bar| baz) bang)"})
         slurp.barfBackward(")")
         return assert.is.equal("(foo (bar) baz bang)", nvim.actual(buf))
       end
@@ -68,7 +68,7 @@ do
     end
     local b_2_auto0 = require("plenary.busted")
     local function _10_()
-      nvim.setup(buf, {"(foo (() bar) baz)"}, {1, 6})
+      nvim.setup(buf, {"(foo ((|) bar) baz)"})
       slurp.barfBackward(")")
       return assert.is.equal("(foo (()) bar baz)", nvim.actual(buf))
     end
