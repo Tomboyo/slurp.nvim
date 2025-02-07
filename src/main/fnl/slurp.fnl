@@ -142,6 +142,12 @@
               lines (vim.api.nvim_buf_get_text 0 a b c d {})]
           (vim.api.nvim_buf_set_text 0 e f g h lines)))))
 
+(fn unwrap [ldelim rdelim]
+  (let [p (findDelimitedRange ldelim rdelim (vts.get_node))
+        [a b c d] (innerRange p)
+        lines (vim.api.nvim_buf_get_text 0 a b c d {})
+        (e f g h) (vts.get_node_range p)]
+    (vim.api.nvim_buf_set_text 0 e f g h lines)))
 
 ;; Plug maps
 ; Element selection
@@ -197,19 +203,14 @@
                 (fn [] (barfBackward ")")))
 (vim.keymap.set [:n]
                 "<Plug>(slurp-replace-parent)"
-                (fn [] (let [n (vts.get_node)
-                             p (tree.nextNamedParent n)]
-                         (if p
-                             (let [(a b c d) (vts.get_node_range n)
-                                   (e f g h) (vts.get_node_range p)
-                                   lines (vim.api.nvim_buf_get_text 0 a b c d {})]
-                         (vim.api.nvim_buf_set_text 0 e f g h lines))))))
+                replaceParent)
 (vim.keymap.set [:n]
                 "<Plug>(slurp-delete-surrounding-())"
-                replaceParent)
+                (fn [] (unwrap "(" ")")))
 
 {:slurpForward slurpForward
  :slurpBackward slurpBackward
  :barfForward barfForward
  :barfBackward barfBackward
- :replaceParent replaceParent}
+ :replaceParent replaceParent
+ :unwrap unwrap}
