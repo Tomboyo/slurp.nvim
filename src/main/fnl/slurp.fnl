@@ -208,6 +208,8 @@
                 "<Plug>(slurp-delete-surrounding-())"
                 (fn [] (unwrap "(" ")")))
 
+; TODO: once all modules are exported, delete <Plug>s in favor of README. These
+; functions need to be exposed so users can customize mappings per language.
 {:slurpForward slurpForward
  :slurpBackward slurpBackward
  :barfForward barfForward
