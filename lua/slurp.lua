@@ -233,33 +233,27 @@ local function _41_()
   return select(surroundingNode(findDelimitedRange("{", "}", vts.get_node())))
 end
 vim.keymap.set({"v", "o"}, "<Plug>(slurp-select-outside-{element})", _41_)
+vim.keymap.set({"n", "v", "o"}, "<Plug>(slurp-forward-into-element)", forwardIntoElement, {})
+vim.keymap.set({"n", "v", "o"}, "<Plug>(slurp-forward-over-element)", forwardOverElement, {})
 local function _42_()
-  return forwardIntoElement()
-end
-vim.keymap.set({"n", "v", "o"}, "<Plug>(slurp-forward-into-element)", _42_, {})
-local function _43_()
-  return forwardOverElement()
-end
-vim.keymap.set({"n", "v", "o"}, "<Plug>(slurp-forward-over-element)", _43_, {})
-local function _44_()
   return slurpForward(")")
 end
-vim.keymap.set({"n"}, "<Plug>(slurp-slurp-close-paren-forward)", _44_)
-local function _45_()
+vim.keymap.set({"n"}, "<Plug>(slurp-slurp-close-paren-forward)", _42_)
+local function _43_()
   return slurpBackward("(")
 end
-vim.keymap.set({"n"}, "<Plug>(slurp-slurp-open-paren-backward)", _45_)
-local function _46_()
+vim.keymap.set({"n"}, "<Plug>(slurp-slurp-open-paren-backward)", _43_)
+local function _44_()
   return barfForward("(")
 end
-vim.keymap.set({"n"}, "<Plug>(slurp-barf-open-paren-forward)", _46_)
-local function _47_()
+vim.keymap.set({"n"}, "<Plug>(slurp-barf-open-paren-forward)", _44_)
+local function _45_()
   return barfBackward(")")
 end
-vim.keymap.set({"n"}, "<Plug>(slurp-barf-close-paren-backward)", _47_)
+vim.keymap.set({"n"}, "<Plug>(slurp-barf-close-paren-backward)", _45_)
 vim.keymap.set({"n"}, "<Plug>(slurp-replace-parent)", replaceParent)
-local function _48_()
+local function _46_()
   return unwrap("(", ")")
 end
-vim.keymap.set({"n"}, "<Plug>(slurp-delete-surrounding-())", _48_)
-return {slurpForward = slurpForward, slurpBackward = slurpBackward, barfForward = barfForward, barfBackward = barfBackward, replaceParent = replaceParent, unwrap = unwrap}
+vim.keymap.set({"n"}, "<Plug>(slurp-delete-surrounding-())", _46_)
+return {slurpForward = slurpForward, slurpBackward = slurpBackward, barfForward = barfForward, barfBackward = barfBackward, replaceParent = replaceParent, unwrap = unwrap, forwardIntoElement = forwardIntoElement, forwardOverElement = forwardOverElement}

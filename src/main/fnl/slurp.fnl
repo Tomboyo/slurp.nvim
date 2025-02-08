@@ -181,11 +181,11 @@
 ; motion
 (vim.keymap.set [:n :v :o]
               "<Plug>(slurp-forward-into-element)"
-              (fn [] (forwardIntoElement))
+              forwardIntoElement
               {})
 (vim.keymap.set [:n :v :o]
               "<Plug>(slurp-forward-over-element)"
-              (fn [] (forwardOverElement))
+              forwardOverElement
               {})
 
 ; manipulation
@@ -210,9 +210,13 @@
 
 ; TODO: once all modules are exported, delete <Plug>s in favor of README. These
 ; functions need to be exposed so users can customize mappings per language.
-{:slurpForward slurpForward
+{;manipulation
+ :slurpForward slurpForward
  :slurpBackward slurpBackward
  :barfForward barfForward
  :barfBackward barfBackward
  :replaceParent replaceParent
- :unwrap unwrap}
+ :unwrap unwrap
+ ;motion
+ :forwardIntoElement forwardIntoElement
+ :forwardOverElement forwardOverElement}

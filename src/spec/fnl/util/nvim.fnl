@@ -40,7 +40,34 @@
     (vim.api.nvim_win_set_cursor 0 pos))
   buf)
 
-(fn m.actual [buf]
-  (. (vim.api.nvim_buf_get_lines buf 0 1 true) 1))
+(fn injectCursor [lines [row col]]
+  (icollect [r line (ipairs lines)]
+      (if (= row r)
+          (let [start (line:sub 1 (- col 1))
+                end (line:sub col)]
+            (.. start "|" end))
+          line)))
+
+(comment
+  (icollect [_ v (ipairs [1 2 3 4 5])]
+    (injectCursor ["foo" "bar" "baz"] [2 v]))
+  )
+
+(fn m.actual [buf options]
+  (if options
+    (let [cursor (vim.api.nvim_win_get_cursor 0)
+         lines (vim.api.nvim_buf_get_lines buf 0 1 true)
+         lines (if (. options :cursor)
+                  (injectCursor lines cursor)
+                  lines)]
+      lines)
+    ;; legacy - TODO remove me
+    (. (vim.api.nvim_buf_get_lines buf 0 1 true) 1)))
+
+(fn m.withBuf [f]
+  (let [buf (vim.api.nvim_create_buf false true)
+        (err result) (pcall f buf)]
+    (vim.api.nvim_buf_delete buf {})
+    (when err (error err))))
 
 m

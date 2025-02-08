@@ -57,7 +57,52 @@ m.setup = function(buf, lines)
   end
   return buf
 end
-m.actual = function(buf)
-  return vim.api.nvim_buf_get_lines(buf, 0, 1, true)[1]
+local function injectCursor(lines, _7_)
+  local row = _7_[1]
+  local col = _7_[2]
+  local tbl_21_auto = {}
+  local i_22_auto = 0
+  for r, line in ipairs(lines) do
+    local val_23_auto
+    if (row == r) then
+      local start = line:sub(1, (col - 1))
+      local _end = line:sub(col)
+      val_23_auto = (start .. "|" .. _end)
+    else
+      val_23_auto = line
+    end
+    if (nil ~= val_23_auto) then
+      i_22_auto = (i_22_auto + 1)
+      tbl_21_auto[i_22_auto] = val_23_auto
+    else
+    end
+  end
+  return tbl_21_auto
+end
+--[[ (icollect [_ v (ipairs [1 2 3 4 5])] (injectCursor ["foo" "bar" "baz"] [2 v])) ]]
+m.actual = function(buf, options)
+  if options then
+    local cursor = vim.api.nvim_win_get_cursor(0)
+    local lines = vim.api.nvim_buf_get_lines(buf, 0, 1, true)
+    local lines0
+    if options.cursor then
+      lines0 = injectCursor(lines, cursor)
+    else
+      lines0 = lines
+    end
+    return lines0
+  else
+    return vim.api.nvim_buf_get_lines(buf, 0, 1, true)[1]
+  end
+end
+m.withBuf = function(f)
+  local buf = vim.api.nvim_create_buf(false, true)
+  local err, result = pcall(f, buf)
+  vim.api.nvim_buf_delete(buf, {})
+  if err then
+    return error(err)
+  else
+    return nil
+  end
 end
 return m
