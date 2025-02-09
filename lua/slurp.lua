@@ -23,14 +23,11 @@ local function innerRange(n)
   end
 end
 local function namedParents(node)
-  local function _4_(n)
-    if n then
-      return tree.nextNamedParent(n)
-    else
-      return node
-    end
+  if (nil == node) then
+    error("missing node")
+  else
   end
-  return iter.iterator(_4_)
+  return iter.iterator(tree.nextNamedParent, node)
 end
 local function surroundingNode(n)
   local p = (n and tree.nextNamedParent(n))
@@ -39,15 +36,15 @@ end
 local function delimitedRange(ldelim, rdelim, node)
   local nodes = node:iter_children()
   local left
-  local function _6_(n)
+  local function _5_(n)
     return (ldelim == vts.get_node_text(n, 0))
   end
-  left = iter.find(_6_, nodes)
+  left = iter.find(_5_, nodes)
   local right
-  local function _7_(n)
+  local function _6_(n)
     return (rdelim == vts.get_node_text(n, 0))
   end
-  right = iter.find(_7_, nodes)
+  right = iter.find(_6_, nodes)
   if (left and right) then
     return tree.rangeBetween(left, right)
   else
@@ -55,46 +52,37 @@ local function delimitedRange(ldelim, rdelim, node)
   end
 end
 local function findDelimitedRange(ldelim, rdelim, node)
-  local function _9_(n)
+  local function _8_(n)
     return delimitedRange(ldelim, rdelim, n)
   end
-  return iter.find(_9_, namedParents(node))
+  return iter.find(_8_, namedParents(node))
 end
 local function forwardIntoElement()
+  local _let_9_ = vim.fn.getpos(".")
+  local _ = _let_9_[1]
+  local line = _let_9_[2]
+  local col = _let_9_[3]
+  local _0 = _let_9_[4]
+  return ts.goto_node(tree.nextLexicalInnerNode(ts.get_node_at_cursor(), line, col))
+end
+local function forwardOverElement()
   local _let_10_ = vim.fn.getpos(".")
   local _ = _let_10_[1]
   local line = _let_10_[2]
   local col = _let_10_[3]
   local _0 = _let_10_[4]
-  return ts.goto_node(tree.nextLexicalInnerNode(ts.get_node_at_cursor(), line, col))
-end
-local function forwardOverElement()
-  local _let_11_ = vim.fn.getpos(".")
-  local _ = _let_11_[1]
-  local line = _let_11_[2]
-  local col = _let_11_[3]
-  local _0 = _let_11_[4]
   local node = vts.get_node()
   return ts.goto_node(tree.nextLexicalOuterNode(node, line, col))
 end
 local function moveDelimiter(symbol, getDelim, getSubject, getSubjectRange)
   local nodes
-  local function _12_(n)
-    if n then
-      return tree.nextNamedParent(n)
-    else
-      return vts.get_node()
-    end
-  end
-  nodes = iter.iterator(_12_)
-  local nodes0
-  local function _14_(n)
+  local function _11_(n)
     local x = getDelim(n)
     return (x and (symbol == vts.get_node_text(x, 0)))
   end
-  nodes0 = iter.filter(_14_, nodes)
-  local nodes1 = iter.filter(getSubject, nodes0)
-  local node = nodes1()
+  nodes = iter.filter(_11_, namedParents(vts.get_node()))
+  local nodes0 = iter.filter(getSubject, nodes)
+  local node = nodes0()
   if node then
     local delim = getDelim(node)
     local subject = getSubject(node)
@@ -105,62 +93,62 @@ local function moveDelimiter(symbol, getDelim, getSubject, getSubjectRange)
   end
 end
 local function slurpForward(symbol)
-  local function _16_(n)
+  local function _13_(n)
     return tree.child(n, -1)
   end
-  local function _17_(n)
+  local function _14_(n)
     return n:next_named_sibling()
   end
-  local function _18_(d, s)
+  local function _15_(d, s)
     local _, _0, c, d0 = vts.get_node_range(d)
     local _1, _2, g, h = vts.get_node_range(s)
     return {c, d0, g, h}
   end
-  return moveDelimiter(symbol, _16_, _17_, _18_)
+  return moveDelimiter(symbol, _13_, _14_, _15_)
 end
 local function slurpBackward(symbol)
-  local function _19_(n)
+  local function _16_(n)
     return tree.child(n, 0)
   end
-  local function _20_(n)
+  local function _17_(n)
     return n:prev_named_sibling()
   end
-  local function _21_(d, s)
+  local function _18_(d, s)
     local a, b, _, _0 = vts.get_node_range(d)
     local e, f, _1, _2 = vts.get_node_range(s)
     return {e, f, a, b}
   end
-  return moveDelimiter(symbol, _19_, _20_, _21_)
+  return moveDelimiter(symbol, _16_, _17_, _18_)
 end
 local function barfForward(symbol)
-  local function _22_(n)
+  local function _19_(n)
     return tree.child(n, 0)
   end
-  local function _23_(n)
+  local function _20_(n)
     return tree.namedChild(n, 0)
   end
-  local function _24_(_d, s)
+  local function _21_(_d, s)
     local sibling = s:next_sibling()
     local a, b, _, _0 = vts.get_node_range(s)
     local e, f, _1, _2 = vts.get_node_range(sibling)
     return {a, b, e, f}
   end
-  return moveDelimiter(symbol, _22_, _23_, _24_)
+  return moveDelimiter(symbol, _19_, _20_, _21_)
 end
 local function barfBackward(symbol)
-  local function _25_(n)
+  local function _22_(n)
     return tree.child(n, -1)
   end
-  local function _26_(n)
+  local function _23_(n)
     return tree.namedChild(n, -1)
   end
-  local function _27_(d, s)
+  local function _24_(d, s)
     local sibling = s:prev_sibling()
     local _, _0, c, d0 = vts.get_node_range(sibling)
     local _1, _2, g, h = vts.get_node_range(s)
     return {c, d0, g, h}
   end
-  return moveDelimiter(symbol, _25_, _26_, _27_)
+  return moveDelimiter(symbol, _22_, _23_, _24_)
 end
 local function replaceParent()
   local n = vts.get_node()
@@ -176,84 +164,84 @@ local function replaceParent()
 end
 local function unwrap(ldelim, rdelim)
   local p = findDelimitedRange(ldelim, rdelim, vts.get_node())
-  local _let_29_ = innerRange(p)
-  local a = _let_29_[1]
-  local b = _let_29_[2]
-  local c = _let_29_[3]
-  local d = _let_29_[4]
+  local _let_26_ = innerRange(p)
+  local a = _let_26_[1]
+  local b = _let_26_[2]
+  local c = _let_26_[3]
+  local d = _let_26_[4]
   local lines = vim.api.nvim_buf_get_text(0, a, b, c, d, {})
   local e, f, g, h = vts.get_node_range(p)
   return vim.api.nvim_buf_set_text(0, e, f, g, h, lines)
 end
-local function _30_()
+local function _27_()
   return select(vts.get_node())
 end
-vim.keymap.set({"v", "o"}, "<Plug>(slurp-select-element)", _30_)
-local function _31_()
+vim.keymap.set({"v", "o"}, "<Plug>(slurp-select-element)", _27_)
+local function _28_()
   return select(innerRange(vts.get_node()))
 end
-vim.keymap.set({"v", "o"}, "<Plug>(slurp-select-inside-element)", _31_)
-local function _32_()
+vim.keymap.set({"v", "o"}, "<Plug>(slurp-select-inside-element)", _28_)
+local function _29_()
   return select(surroundingNode(vts.get_node()))
 end
-vim.keymap.set({"v", "o"}, "<Plug>(slurp-select-outside-element)", _32_)
-local function _33_()
+vim.keymap.set({"v", "o"}, "<Plug>(slurp-select-outside-element)", _29_)
+local function _30_()
   return select(findDelimitedRange("(", ")", vts.get_node()))
 end
-vim.keymap.set({"v", "o"}, "<Plug>(slurp-select-(element))", _33_)
-local function _34_()
+vim.keymap.set({"v", "o"}, "<Plug>(slurp-select-(element))", _30_)
+local function _31_()
   return select(findDelimitedRange("[", "]", vts.get_node()))
 end
-vim.keymap.set({"v", "o"}, "<Plug>(slurp-select-[element])", _34_)
-local function _35_()
+vim.keymap.set({"v", "o"}, "<Plug>(slurp-select-[element])", _31_)
+local function _32_()
   return select(findDelimitedRange("{", "}", vts.get_node()))
 end
-vim.keymap.set({"v", "o"}, "<Plug>(slurp-select-{element})", _35_)
-local function _36_()
+vim.keymap.set({"v", "o"}, "<Plug>(slurp-select-{element})", _32_)
+local function _33_()
   return select(innerRange(findDelimitedRange("(", ")", vts.get_node())))
 end
-vim.keymap.set({"v", "o"}, "<Plug>(slurp-select-inside-(element))", _36_)
-local function _37_()
+vim.keymap.set({"v", "o"}, "<Plug>(slurp-select-inside-(element))", _33_)
+local function _34_()
   return select(innerRange(findDelimitedRange("[", "]", vts.get_node())))
 end
-vim.keymap.set({"v", "o"}, "<Plug>(slurp-select-inside-[element])", _37_)
-local function _38_()
+vim.keymap.set({"v", "o"}, "<Plug>(slurp-select-inside-[element])", _34_)
+local function _35_()
   return select(innerRange(findDelimitedRange("{", "}", vts.get_node())))
 end
-vim.keymap.set({"v", "o"}, "<Plug>(slurp-select-inside-{element})", _38_)
-local function _39_()
+vim.keymap.set({"v", "o"}, "<Plug>(slurp-select-inside-{element})", _35_)
+local function _36_()
   return select(surroundingNode(findDelimitedRange("(", ")", vts.get_node())))
 end
-vim.keymap.set({"v", "o"}, "<Plug>(slurp-select-outside-(element))", _39_)
-local function _40_()
+vim.keymap.set({"v", "o"}, "<Plug>(slurp-select-outside-(element))", _36_)
+local function _37_()
   return select(surroundingNode(findDelimitedRange("[", "]", vts.get_node())))
 end
-vim.keymap.set({"v", "o"}, "<Plug>(slurp-select-outside-[element])", _40_)
-local function _41_()
+vim.keymap.set({"v", "o"}, "<Plug>(slurp-select-outside-[element])", _37_)
+local function _38_()
   return select(surroundingNode(findDelimitedRange("{", "}", vts.get_node())))
 end
-vim.keymap.set({"v", "o"}, "<Plug>(slurp-select-outside-{element})", _41_)
+vim.keymap.set({"v", "o"}, "<Plug>(slurp-select-outside-{element})", _38_)
 vim.keymap.set({"n", "v", "o"}, "<Plug>(slurp-forward-into-element)", forwardIntoElement, {})
 vim.keymap.set({"n", "v", "o"}, "<Plug>(slurp-forward-over-element)", forwardOverElement, {})
-local function _42_()
+local function _39_()
   return slurpForward(")")
 end
-vim.keymap.set({"n"}, "<Plug>(slurp-slurp-close-paren-forward)", _42_)
-local function _43_()
+vim.keymap.set({"n"}, "<Plug>(slurp-slurp-close-paren-forward)", _39_)
+local function _40_()
   return slurpBackward("(")
 end
-vim.keymap.set({"n"}, "<Plug>(slurp-slurp-open-paren-backward)", _43_)
-local function _44_()
+vim.keymap.set({"n"}, "<Plug>(slurp-slurp-open-paren-backward)", _40_)
+local function _41_()
   return barfForward("(")
 end
-vim.keymap.set({"n"}, "<Plug>(slurp-barf-open-paren-forward)", _44_)
-local function _45_()
+vim.keymap.set({"n"}, "<Plug>(slurp-barf-open-paren-forward)", _41_)
+local function _42_()
   return barfBackward(")")
 end
-vim.keymap.set({"n"}, "<Plug>(slurp-barf-close-paren-backward)", _45_)
+vim.keymap.set({"n"}, "<Plug>(slurp-barf-close-paren-backward)", _42_)
 vim.keymap.set({"n"}, "<Plug>(slurp-replace-parent)", replaceParent)
-local function _46_()
+local function _43_()
   return unwrap("(", ")")
 end
-vim.keymap.set({"n"}, "<Plug>(slurp-delete-surrounding-())", _46_)
+vim.keymap.set({"n"}, "<Plug>(slurp-delete-surrounding-())", _43_)
 return {slurpForward = slurpForward, slurpBackward = slurpBackward, barfForward = barfForward, barfBackward = barfBackward, replaceParent = replaceParent, unwrap = unwrap, forwardIntoElement = forwardIntoElement, forwardOverElement = forwardOverElement, select = select}

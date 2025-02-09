@@ -33,11 +33,9 @@
 
 (fn namedParents [node]
   "An iterator over the node and its named parents."
-  (iter.iterator
-    (fn [n]
-      (if n 
-          (tree.nextNamedParent n)
-          node))))
+  (when (= nil node)
+      (error "missing node"))
+  (iter.iterator tree.nextNamedParent node))
 
 (fn surroundingNode [n]
   (let [p (and n (tree.nextNamedParent n))]
@@ -69,19 +67,13 @@
     (ts.goto_node (tree.nextLexicalOuterNode node line col))))
 
 (fn moveDelimiter [symbol getDelim getSubject getSubjectRange]
-  (let [; Iterates over this node and its named parents
-        nodes (iter.iterator
-                (fn [n]
-                  (if n 
-                      (tree.nextNamedParent n)
-                      (vts.get_node))))
-        ; Filter out nodes without a matching delimiter
+  (let [ ; Filter out nodes without a matching delimiter
         nodes (iter.filter
                 (fn [n]
                   (let [x (getDelim n)]
                     (and x (= symbol
                               (vts.get_node_text x 0)))))
-                nodes)
+                (namedParents (vts.get_node)))
         ; Filter out nodes which lack a subject to swap with the delimiter
         nodes (iter.filter getSubject nodes)
         node (nodes)]

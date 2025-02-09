@@ -1,18 +1,25 @@
 (local m {})
 
-(fn m.iterator [f]
-  "Produce an iterator from the function f. f is called with no arguments to
-  get the first value, and is called with the previous value to generate each
-  subsequent value. Iteration stops when f returns nil."
-  (var state (f))
+(fn m.iterator [f x]
+  "Produce an iterator from the function f. The iterator will yield x as its
+  first value, f(x) as the second, f(f(x)) as the third, and so on until the
+  application of f returns nil."
+  (var state x)
   (fn []
     (if (= nil state)
-        state
+        nil
         (let [tmp state]
-          (set state (f tmp))
+          (set state (f state))
           tmp))))
 
 (comment
+  (local it (m.iterator (fn [x] (+ 1 x)) 0))
+  (it)
+  (let [it (m.iterator (fn [x] (if (< x 5) (+ 1 x))) 0)]
+    (accumulate [acc [] v it]
+      (do (table.insert acc v) acc)))
+  (it)
+    
   ; Counts to 4, then returns nil forever.
   (local iter (m.iterator
                 (fn [x]
