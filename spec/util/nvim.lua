@@ -97,10 +97,10 @@ m.actual = function(buf, options)
 end
 m.withBuf = function(f)
   local buf = vim.api.nvim_create_buf(false, true)
-  local err, result = pcall(f, buf)
+  local success, result = pcall(f, buf)
   vim.api.nvim_buf_delete(buf, {})
-  if err then
-    return error(err)
+  if not success then
+    return error(result)
   else
     return nil
   end

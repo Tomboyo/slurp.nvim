@@ -66,8 +66,8 @@
 
 (fn m.withBuf [f]
   (let [buf (vim.api.nvim_create_buf false true)
-        (err result) (pcall f buf)]
+        (success result) (pcall f buf)]
     (vim.api.nvim_buf_delete buf {})
-    (when err (error err))))
+    (when (not success) (error result))))
 
 m
