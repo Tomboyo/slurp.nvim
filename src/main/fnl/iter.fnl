@@ -13,20 +13,9 @@
           tmp))))
 
 (comment
-  (local it (m.iterator (fn [x] (+ 1 x)) 0))
-  (it)
   (let [it (m.iterator (fn [x] (if (< x 5) (+ 1 x))) 0)]
     (accumulate [acc [] v it]
-      (do (table.insert acc v) acc)))
-  (it)
-    
-  ; Counts to 4, then returns nil forever.
-  (local iter (m.iterator
-                (fn [x]
-                  (if x
-                      (if (> x 3) nil (+ 1 x))
-                      1))))
-  (iter))
+      (do (table.insert acc v) acc))))
 
 (fn m.filter [pred iter]
   (fn f []
@@ -38,17 +27,11 @@
               (f))))))
 
 (comment
-  ; An iterator over positive integers
-  (local ints (m.iterator (fn [i] (if i (+ i 1) 1))))
-  ; An iterator of only positive even integers
-  (local evens (m.filter (fn [i] (= 0 (% i 2))) ints))
-  (evens)
-
-  (local iter (m.iterator (fn [x] (if x
-                                      (if (> x 3) nil (+ 1 x))
-                                      1))))
-  (local evens (m.filter (fn [i] (= 0 (% i 2))) iter))
-  (evens))
+  (let [ints (m.iterator (fn [i] (if (< i 10) (+ i 1))) 0)
+        three (m.filter (fn [i] (< i 3)) ints)]
+    (accumulate [acc [] v three]
+      (do (table.insert acc v) acc))))
+  
 
 (fn m.find [pred iter]
   (let [x (iter)]
@@ -57,5 +40,10 @@
         (if (pred x)
             x
             (m.find pred iter)))))
+
+(comment
+  (let [ints (m.iterator (fn [i] (if (< i 10) (+ i 1))) 0)]
+    (m.find (fn [x] (= x 3)) ints))
+  )
 
 m
