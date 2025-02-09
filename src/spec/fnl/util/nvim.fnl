@@ -41,22 +41,30 @@
   buf)
 
 (fn injectCursor [lines [row col]]
+  "Splice a '|' character representing the cursor into lines at the 1,0-offset
+  position given by [row col]"
   (icollect [r line (ipairs lines)]
       (if (= row r)
-          (let [start (line:sub 1 (- col 1))
-                end (line:sub col)]
+          (let [start (line:sub 1 col)
+                end (line:sub (+ 1 col))]
             (.. start "|" end))
           line)))
 
 (comment
-  (icollect [_ v (ipairs [1 2 3 4 5])]
-    (injectCursor ["foo" "bar" "baz"] [2 v]))
+  (injectCursor ["foo" "bar" "baz"]
+                [2 0]) ;=> [... "|bar" ...]
+  (injectCursor ["foo" "bar" "baz"]
+                [2 1]) ;=> [... "b|ar" ...]
+  (injectCursor ["foo" "bar" "baz"]
+                [2 2]) ;=> [... "ba|r" ...]
+  (injectCursor ["foo" "bar" "baz"]
+                [2 3]) ;=> [... "bar|" ...]
   )
 
 (fn m.actual [buf options]
   (if options
-    (let [cursor (vim.api.nvim_win_get_cursor 0)
-         lines (vim.api.nvim_buf_get_lines buf 0 1 true)
+    (let [cursor (vim.api.nvim_win_get_cursor 0) ; 1,0-offset
+         lines (vim.api.nvim_buf_get_lines buf 0 -1 true)
          lines (if (. options :cursor)
                   (injectCursor lines cursor)
                   lines)]

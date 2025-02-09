@@ -65,8 +65,8 @@ local function injectCursor(lines, _7_)
   for r, line in ipairs(lines) do
     local val_23_auto
     if (row == r) then
-      local start = line:sub(1, (col - 1))
-      local _end = line:sub(col)
+      local start = line:sub(1, col)
+      local _end = line:sub((1 + col))
       val_23_auto = (start .. "|" .. _end)
     else
       val_23_auto = line
@@ -79,11 +79,11 @@ local function injectCursor(lines, _7_)
   end
   return tbl_21_auto
 end
---[[ (icollect [_ v (ipairs [1 2 3 4 5])] (injectCursor ["foo" "bar" "baz"] [2 v])) ]]
+--[[ (injectCursor ["foo" "bar" "baz"] [2 0]) (injectCursor ["foo" "bar" "baz"] [2 1]) (injectCursor ["foo" "bar" "baz"] [2 2]) (injectCursor ["foo" "bar" "baz"] [2 3]) ]]
 m.actual = function(buf, options)
   if options then
     local cursor = vim.api.nvim_win_get_cursor(0)
-    local lines = vim.api.nvim_buf_get_lines(buf, 0, 1, true)
+    local lines = vim.api.nvim_buf_get_lines(buf, 0, -1, true)
     local lines0
     if options.cursor then
       lines0 = injectCursor(lines, cursor)

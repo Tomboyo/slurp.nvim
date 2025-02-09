@@ -9,7 +9,7 @@ do
         local function _3_(buf)
           nvim.setup(buf, {"(|foo (bar baz) bang)"})
           slurp.forwardIntoElement()
-          return assert.is.equal({"(foo |(bar baz) bang)"}, nvim.actual(buf, {cursor = true}))
+          return assert.is.same({"(foo |(bar baz) bang)"}, nvim.actual(buf, {cursor = true}))
         end
         return nvim.withBuf(_3_)
       end
@@ -21,7 +21,7 @@ do
         local function _5_(buf)
           nvim.setup(buf, {"(foo |(bar baz) bang)"})
           slurp.forwardIntoElement()
-          return assert.is.equal({"(foo (|bar baz) bang)"}, nvim.actual(buf, {cursor = true}))
+          return assert.is.same({"(foo (|bar baz) bang)"}, nvim.actual(buf, {cursor = true}))
         end
         return nvim.withBuf(_5_)
       end
@@ -32,7 +32,7 @@ do
       local function _7_(buf)
         nvim.setup(buf, {"(|foo", "bar", "baz)"})
         slurp.forwardIntoElement()
-        return assert.is.equal({"(foo", "|bar", "baz)"}, nvim.actual(buf, {cursor = true}))
+        return assert.is.same({"(foo", "|bar", "baz)"}, nvim.actual(buf, {cursor = true}))
       end
       return nvim.withBuf(_7_)
     end
@@ -48,8 +48,8 @@ do
       local function _9_()
         local function _10_(buf)
           nvim.setup(buf, {"(|foo (bar baz) bang)"})
-          slurp.fowardOverElement()
-          return assert.is.equal({"(foo |(bar baz) bang)"}, nvim.actual(buf, {cursor = true}))
+          slurp.forwardOverElement()
+          return assert.is.same({"(foo |(bar baz) bang)"}, nvim.actual(buf, {cursor = true}))
         end
         return nvim.withBuf(_10_)
       end
@@ -61,7 +61,7 @@ do
         local function _12_(buf)
           nvim.setup(buf, {"(foo |(bar baz) bang)"})
           slurp.forwardOverElement()
-          return assert.is.equal({"(foo (bar baz) |bang)"}, nvim.actual(buf, {cursor = true}))
+          return assert.is.same({"(foo (bar baz) |bang)"}, nvim.actual(buf, {cursor = true}))
         end
         return nvim.withBuf(_12_)
       end
@@ -72,7 +72,7 @@ do
       local function _14_(buf)
         nvim.setup(buf, {"(|foo", "(bar baz)", "bang)"})
         slurp.forwardOverElement()
-        return assert.is.equal({"(foo", "|(bar baz)", "bang"}, nvim.actual(buf, {cursor = true}))
+        return assert.is.same({"(foo", "|(bar baz)", "bang)"}, nvim.actual(buf, {cursor = true}))
       end
       return nvim.withBuf(_14_)
     end
