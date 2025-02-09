@@ -4,10 +4,9 @@
 ;; TODO: move this into :iter, and also rewrite :iter now that I know how
 ;; iterators actually work in lua
 (fn find [pred iterfunc a i]
-  (let [(i v) (iterfunc a i)
-        x (pred v)]
-    (if x
-        (values i v x)
+  (let [(i v) (iterfunc a i)]
+    (if (and v (pred v))
+        (values i v (pred v))
         (if (= nil v)
             (values nil nil)
             (find pred iterfunc a i)))))
@@ -18,7 +17,7 @@
 
 (fn linesAndPosition [lines]
   (let [(row _ col) (find (fn [line] (string.find line "|"))
-                        (ipairs lines))]
+                          (ipairs lines))]
     (when (not row)
       (error "missing pipe character in lines input"))
     (let [lines (icollect [i v (ipairs lines)]
@@ -29,7 +28,8 @@
 
 (comment
   ;; ["first line" "second line" "third line"] [2 2]
-  (linesAndPosition ["first line" "se|cond line" "third line"]))
+  (linesAndPosition ["first line" "se|cond line" "third line"])
+  (linesAndPosition ["|first" "second" "third"]))
 
 (fn m.setup [buf lines]
   (let [(lines pos) (linesAndPosition lines)]
@@ -77,5 +77,11 @@
         (success result) (pcall f buf)]
     (vim.api.nvim_buf_delete buf {})
     (when (not success) (error result))))
+
+(fn m.actualSelection [buf]
+  (let [[_ a b _] (vim.fn.getpos "v")
+        [_ c d _] (vim.fn.getpos ".")
+        text (vim.api.nvim_buf_get_text buf (- a 1) (- b 1) (- c 1) d {})]
+    text))
 
 m

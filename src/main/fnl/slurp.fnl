@@ -219,4 +219,6 @@
  :unwrap unwrap
  ;motion
  :forwardIntoElement forwardIntoElement
- :forwardOverElement forwardOverElement}
+ :forwardOverElement forwardOverElement
+ ;text objects
+ :select select}

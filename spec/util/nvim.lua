@@ -2,9 +2,8 @@ local iter = require("iter")
 local m = {}
 local function find(pred, iterfunc, a, i)
   local i0, v = iterfunc(a, i)
-  local x = pred(v)
-  if x then
-    return i0, v, x
+  if (v and pred(v)) then
+    return i0, v, pred(v)
   else
     if (nil == v) then
       return nil, nil
@@ -45,7 +44,7 @@ local function linesAndPosition(lines)
   end
   return lines0, {row, (col - 1)}
 end
---[[ (linesAndPosition ["first line" "se|cond line" "third line"]) ]]
+--[[ (linesAndPosition ["first line" "se|cond line" "third line"]) (linesAndPosition ["|first" "second" "third"]) ]]
 m.setup = function(buf, lines)
   do
     local lines0, pos = linesAndPosition(lines)
@@ -104,5 +103,19 @@ m.withBuf = function(f)
   else
     return nil
   end
+end
+m.actualSelection = function(buf)
+  local _let_13_ = vim.fn.getpos("v")
+  local _ = _let_13_[1]
+  local a = _let_13_[2]
+  local b = _let_13_[3]
+  local _0 = _let_13_[4]
+  local _let_14_ = vim.fn.getpos(".")
+  local _1 = _let_14_[1]
+  local c = _let_14_[2]
+  local d = _let_14_[3]
+  local _2 = _let_14_[4]
+  local text = vim.api.nvim_buf_get_text(buf, (a - 1), (b - 1), (c - 1), d, {})
+  return text
 end
 return m
