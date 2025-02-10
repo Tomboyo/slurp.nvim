@@ -1,35 +1,35 @@
 local iter = require("iter")
 local m = {}
-local function find(pred, iterfunc, a, i)
-  local i0, v = iterfunc(a, i)
-  if (v and pred(v)) then
-    return i0, v, pred(v)
-  else
-    if (nil == v) then
-      return nil, nil
-    else
-      return find(pred, iterfunc, a, i0)
-    end
-  end
-end
 --[[ (find (fn [x] (= "b" x)) (ipairs ["a" "b" "c"])) ]]
 local function linesAndPosition(lines)
-  local row, _, col = nil, nil, nil
-  local function _3_(line)
-    return string.find(line, "|")
+  local cursor
+  local function _2_(_1_)
+    local _ = _1_[1]
+    local col = _1_[2]
+    return col
   end
-  row, _, col = find(_3_, ipairs(lines))
-  if not row then
+  local function _4_(_3_)
+    local i = _3_[1]
+    local line = _3_[2]
+    local col = string.find(line, "|")
+    return {i, col}
+  end
+  cursor = iter.find(_2_, iter.map(_4_, iter.indexed(iter.iterate(lines))))
+  if not cursor then
     error("missing pipe character in lines input")
   else
   end
+  local row = cursor[1]
+  local col = cursor[2]
+  local row0 = (1 + row)
+  local col0 = (col - 1)
   local lines0
   do
     local tbl_21_auto = {}
     local i_22_auto = 0
     for i, v in ipairs(lines) do
       local val_23_auto
-      if (row == i) then
+      if (row0 == i) then
         val_23_auto = v:gsub("|", "")
       else
         val_23_auto = v
@@ -42,7 +42,7 @@ local function linesAndPosition(lines)
     end
     lines0 = tbl_21_auto
   end
-  return lines0, {row, (col - 1)}
+  return lines0, {row0, col0}
 end
 --[[ (linesAndPosition ["first line" "se|cond line" "third line"]) (linesAndPosition ["|first" "second" "third"]) ]]
 m.setup = function(buf, lines)
@@ -56,9 +56,9 @@ m.setup = function(buf, lines)
   end
   return buf
 end
-local function injectCursor(lines, _7_)
-  local row = _7_[1]
-  local col = _7_[2]
+local function injectCursor(lines, _8_)
+  local row = _8_[1]
+  local col = _8_[2]
   local tbl_21_auto = {}
   local i_22_auto = 0
   for r, line in ipairs(lines) do
@@ -105,16 +105,16 @@ m.withBuf = function(f)
   end
 end
 m.actualSelection = function(buf)
-  local _let_13_ = vim.fn.getpos("v")
-  local _ = _let_13_[1]
-  local a = _let_13_[2]
-  local b = _let_13_[3]
-  local _0 = _let_13_[4]
-  local _let_14_ = vim.fn.getpos(".")
-  local _1 = _let_14_[1]
-  local c = _let_14_[2]
-  local d = _let_14_[3]
-  local _2 = _let_14_[4]
+  local _let_14_ = vim.fn.getpos("v")
+  local _ = _let_14_[1]
+  local a = _let_14_[2]
+  local b = _let_14_[3]
+  local _0 = _let_14_[4]
+  local _let_15_ = vim.fn.getpos(".")
+  local _1 = _let_15_[1]
+  local c = _let_15_[2]
+  local d = _let_15_[3]
+  local _2 = _let_15_[4]
   local text = vim.api.nvim_buf_get_text(buf, (a - 1), (b - 1), (c - 1), d, {})
   return text
 end

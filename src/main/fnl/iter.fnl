@@ -14,8 +14,17 @@
 
 (comment
   (let [it (m.iterator (fn [x] (if (< x 5) (+ 1 x))) 0)]
-    (accumulate [acc [] v it]
-      (do (table.insert acc v) acc))))
+    (icollect [v it] v))
+  )
+
+(fn m.iterate [arr]
+  "Return an iterator over successive elements of the given array table"
+  (m.stateful (ipairs arr)))
+
+(comment
+  (let [it (m.iterate [:a :b :c])]
+    (icollect [v it] v))
+  )
 
 (fn m.stateful [iter a i]
   "Given a stateless iter (like ipairs), return a stateful iter that yields each
@@ -33,8 +42,8 @@
 
 (comment
   (let [it (m.stateful (ipairs [:a :b :c]))]
-    (accumulate [acc [] v it]
-      (do (table.insert acc v) acc))))
+    (icollect [v it] v))
+  )
 
 (fn m.indexed [f]
   "Given a stateful iterator f, return a new stateful iterator that returns each
@@ -53,8 +62,7 @@
 (comment
   (let [it (m.stateful (ipairs [:a :b :c]))
         it (m.indexed it)]
-    (accumulate [acc [] v it]
-      (do (table.insert acc v) acc)))
+    (icollect [v it] v))
   )
 
 (fn m.filter [pred iter]
@@ -71,9 +79,23 @@
 (comment
   (let [ints (m.iterator (fn [i] (if (< i 10) (+ i 1))) 0)
         three (m.filter (fn [i] (< i 3)) ints)]
-    (accumulate [acc [] v three]
-      (do (table.insert acc v) acc))))
-  
+    (icollect [v three] v))
+  )
+
+(fn m.map [f iter]
+  "Returns an iterator which yields (f v) for each v yielded by iter until iter
+  yields nil."
+  (fn []
+    (let [v (iter)]
+      (if (= nil v)
+          nil
+          (f v)))))
+ 
+(comment
+  (let [it (m.stateful (ipairs [1 2 3 4]))
+        it (m.map (fn [x] (* x x)) it)]
+    (icollect [v it] v))
+  )
 
 (fn m.find [pred iter]
   "Return the first value v of iter for which (pred v) is truthy."
@@ -82,6 +104,14 @@
 (comment
   (let [ints (m.iterator (fn [i] (if (< i 10) (+ i 1))) 0)]
     (m.find (fn [x] (= x 3)) ints))
+  (let [it (m.iterator (fn [] nil) nil)]
+    (m.find (fn [x] (error "I am never called")) it))
   )
+
+(->> ["cats" "dog|s" "skunks"]
+                  (m.iterate)
+                  (m.indexed)
+                  (m.find (fn [[i line]]
+                            (string.find line "|"))))
 
 m

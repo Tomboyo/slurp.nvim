@@ -1,30 +1,27 @@
 (local iter (require :iter))
 (local m {})
 
-;; TODO: move this into :iter, and also rewrite :iter now that I know how
-;; iterators actually work in lua
-(fn find [pred iterfunc a i]
-  (let [(i v) (iterfunc a i)]
-    (if (and v (pred v))
-        (values i v (pred v))
-        (if (= nil v)
-            (values nil nil)
-            (find pred iterfunc a i)))))
-
 (comment
   ; (2 :b true)
   (find (fn [x] (= :b x)) (ipairs [:a :b :c])))
 
 (fn linesAndPosition [lines]
-  (let [(row _ col) (find (fn [line] (string.find line "|"))
-                          (ipairs lines))]
-    (when (not row)
+  (let [cursor (->> (iter.iterate lines)
+                    (iter.indexed)
+                    (iter.map (fn [[i line]]
+                                (let [(col) (string.find line "|")]
+                                  [i col])))
+                    (iter.find (fn [[_ col]] col)))]
+    (when (not cursor)
       (error "missing pipe character in lines input"))
-    (let [lines (icollect [i v (ipairs lines)]
+    (let [[row col] cursor
+          row (+ 1 row)
+          col (- col 1)
+          lines (icollect [i v (ipairs lines)]
                    (if (= row i)
                       (v:gsub "|" "")
                       v))]
-      (values lines [row (- col 1)]))))
+      (values lines [row col]))))
 
 (comment
   ;; ["first line" "second line" "third line"] [2 2]
