@@ -48,7 +48,7 @@ local function findDelimitedRange(ldelim, rdelim, node)
   local function _7_(n)
     return delimitedRange(ldelim, rdelim, n)
   end
-  return iter.find(_7_, tree.iterateNamedParents(node))
+  return iter.find(_7_, tree.namedParents(node))
 end
 local function forwardIntoElement()
   local _let_8_ = vim.fn.getpos(".")
@@ -73,7 +73,7 @@ local function moveDelimiter(symbol, getDelim, getSubject, getSubjectRange)
     local x = getDelim(n)
     return (x and (symbol == vts.get_node_text(x, 0)))
   end
-  nodes = iter.filter(_10_, tree.iterateNamedParents(vts.get_node()))
+  nodes = iter.filter(_10_, tree.namedParents(vts.get_node()))
   local nodes0 = iter.filter(getSubject, nodes)
   local node = nodes0()
   if node then

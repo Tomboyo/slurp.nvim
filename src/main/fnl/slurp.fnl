@@ -31,7 +31,7 @@
 (fn findDelimitedRange [ldelim rdelim node]
   (iter.find
     (fn [n] (delimitedRange ldelim rdelim n))
-    (tree.iterateNamedParents node)))
+    (tree.namedParents node)))
 
 (fn forwardIntoElement []
   (let [[_ line col _] (vim.fn.getpos ".")]
@@ -52,7 +52,7 @@
                   (let [x (getDelim n)]
                     (and x (= symbol
                               (vts.get_node_text x 0)))))
-                (tree.iterateNamedParents (vts.get_node)))
+                (tree.namedParents (vts.get_node)))
         ; Filter out nodes which lack a subject to swap with the delimiter
         nodes (iter.filter getSubject nodes)
         node (nodes)]
