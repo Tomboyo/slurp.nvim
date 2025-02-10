@@ -3,24 +3,6 @@
 (local tree (require :tree))
 (local iter (require :iter))
 
-; Structured text manipulation using treesitter
-;
-; We can take advantage of the s-exp tree created by treesitter to very
-; accurately manipulate the contents of a file in terms of program structure.
-; However, every language has its own grammar with distinct kinds of nodes and
-; distinct names for their nodes. For example, strings in fennel consist of
-; a string node containing two anonymous children and a string_content child,
-; whereas the same structure in clojure is just a single string node. Even so,
-; with a small set of functions and a lookup table per-language, we can
-; implement a lot of vi-sexp/paredit style functions very accurately for a
-; variety of languages, and the whole thing can be extended to new languages
-; just with new lookup tables.
-;
-; Note: If we ask Treesitter for the node under the cursor and the cursor is in
-; a string containing code for a different language, Treesitter will actually
-; select the node of that embedded language. So if we try to outer-select a
-; string, we might end up only selecting something inside it.
-
 (fn select [nodeOrRange]
   (when nodeOrRange (ts.update_selection 0 nodeOrRange)))
 
