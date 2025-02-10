@@ -1,23 +1,19 @@
 (local ts (require "nvim-treesitter.ts_utils"))
 (local m {})
 
-(fn nextNamedParent [node]
+(fn m.nextNamedParent [node]
   (let [p (node:parent)]
     (if p
         (if (p:named)
             p
-            (nextNamedParent p))
+            (m.nextNamedParent p))
         nil)))
-
-; doing this to "publish" because its less error prone than changing the
-; function name to m.* and breaking every call
-(set m.nextNamedParent nextNamedParent)
 
 (fn nextNamedIbling [node]
   "Get the next sibling or nibling"
   (if (node:next_named_sibling)
       (node:next_named_sibling)
-      (nextNamedIbling (nextNamedParent node))))
+      (nextNamedIbling (m.nextNamedParent node))))
 
 (fn nextNamedInnerNode [node]
   (if (> (node:named_child_count) 0)

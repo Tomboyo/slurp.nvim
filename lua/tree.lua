@@ -1,23 +1,22 @@
 local ts = require("nvim-treesitter.ts_utils")
 local m = {}
-local function nextNamedParent(node)
+m.nextNamedParent = function(node)
   local p = node:parent()
   if p then
     if p:named() then
       return p
     else
-      return nextNamedParent(p)
+      return m.nextNamedParent(p)
     end
   else
     return nil
   end
 end
-m.nextNamedParent = nextNamedParent
 local function nextNamedIbling(node)
   if node:next_named_sibling() then
     return node:next_named_sibling()
   else
-    return nextNamedIbling(nextNamedParent(node))
+    return nextNamedIbling(m.nextNamedParent(node))
   end
 end
 local function nextNamedInnerNode(node)
