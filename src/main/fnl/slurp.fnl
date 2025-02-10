@@ -43,7 +43,7 @@
 (fn forwardOverElement []
   (let [[_ line col _] (vim.fn.getpos ".")
         node (vts.get_node)]
-    (ts.goto_node (tree.nextLexicalOuterNode node line col))))
+    (ts.goto_node (tree.nextLexicalOuterNode node (- line 1) (- col 1)))))
 
 (fn moveDelimiter [symbol getDelim getSubject getSubjectRange]
   (let [ ; Filter out nodes without a matching delimiter

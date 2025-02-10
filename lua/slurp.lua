@@ -65,7 +65,7 @@ local function forwardOverElement()
   local col = _let_9_[3]
   local _0 = _let_9_[4]
   local node = vts.get_node()
-  return ts.goto_node(tree.nextLexicalOuterNode(node, line, col))
+  return ts.goto_node(tree.nextLexicalOuterNode(node, (line - 1), (col - 1)))
 end
 local function moveDelimiter(symbol, getDelim, getSubject, getSubjectRange)
   local nodes
