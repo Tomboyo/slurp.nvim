@@ -29,9 +29,11 @@ info:
 clean:
 	rm -rf ${main_lua_dir}
 	rm -rf ${spec_lua_dir}
+
+clean-nvim-env:
 	rm -rf ./.nvim
 
-compile: ${main_lua}
+compile: clean ${main_lua}
 
 # Note: Though we use busted for testing and busted has a fennel loader, busted
 # hasn't released to luarocks since 2023, so we can't use it without running
