@@ -56,7 +56,7 @@ local function forwardIntoElement()
   local line = _let_8_[2]
   local col = _let_8_[3]
   local _0 = _let_8_[4]
-  return ts.goto_node(tree.nextLexicalInnerNode(ts.get_node_at_cursor(), line, col))
+  return ts.goto_node(tree.nextLexicalInnerNode(ts.get_node_at_cursor(), (line - 1), (col - 1)))
 end
 local function forwardOverElement()
   local _let_9_ = vim.fn.getpos(".")

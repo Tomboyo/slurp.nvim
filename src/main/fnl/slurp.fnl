@@ -35,7 +35,10 @@
 
 (fn forwardIntoElement []
   (let [[_ line col _] (vim.fn.getpos ".")]
-    (ts.goto_node (tree.nextLexicalInnerNode (ts.get_node_at_cursor) line col))))
+    (ts.goto_node (tree.nextLexicalInnerNode
+                    (ts.get_node_at_cursor)
+                    (- line 1)
+                    (- col 1)))))
 
 (fn forwardOverElement []
   (let [[_ line col _] (vim.fn.getpos ".")
