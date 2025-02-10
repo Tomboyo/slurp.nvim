@@ -1,5 +1,12 @@
 (local ts (require "nvim-treesitter.ts_utils"))
+(local iter (require :iter))
 (local m {})
+
+(fn m.iterateNamedParents [root]
+  "Returns an iterator over root and its named parents"
+  (when (= nil root)
+    (error "missing root node"))
+  (iter.iterator m.nextNamedParent root))
 
 (fn m.nextNamedParent [node]
   (let [p (node:parent)]

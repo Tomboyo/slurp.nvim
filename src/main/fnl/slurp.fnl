@@ -31,12 +31,6 @@
         (if s (tree.rangeBetween s e)
               (tree.rangeBetween n n)))))
 
-(fn namedParents [node]
-  "An iterator over the node and its named parents."
-  (when (= nil node)
-      (error "missing node"))
-  (iter.iterator tree.nextNamedParent node))
-
 (fn surroundingNode [n]
   (let [p (and n (tree.nextNamedParent n))]
     (or p n)))
@@ -55,7 +49,7 @@
 (fn findDelimitedRange [ldelim rdelim node]
   (iter.find
     (fn [n] (delimitedRange ldelim rdelim n))
-    (namedParents node)))
+    (tree.iterateNamedParents node)))
 
 (fn forwardIntoElement []
   (let [[_ line col _] (vim.fn.getpos ".")]
@@ -73,7 +67,7 @@
                   (let [x (getDelim n)]
                     (and x (= symbol
                               (vts.get_node_text x 0)))))
-                (namedParents (vts.get_node)))
+                (tree.iterateNamedParents (vts.get_node)))
         ; Filter out nodes which lack a subject to swap with the delimiter
         nodes (iter.filter getSubject nodes)
         node (nodes)]
