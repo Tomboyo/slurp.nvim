@@ -1,7 +1,7 @@
 local ts = require("nvim-treesitter.ts_utils")
 local vts = vim.treesitter
-local tree = require("tree")
-local iter = require("iter")
+local tree = require("slurp/tree")
+local iter = require("slurp/iter")
 local function select(nodeOrRange)
   if nodeOrRange then
     return ts.update_selection(0, nodeOrRange)

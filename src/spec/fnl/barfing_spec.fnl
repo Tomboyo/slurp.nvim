@@ -11,7 +11,7 @@
   `(let [b# (require :plenary.busted)]
      (b#.after_each (fn [] ,(unpack body)))))
 
-(local nvim (require :util/nvim))
+(local nvim (require :slurp/util/nvim))
 (local slurp (require :slurp))
 
 (describe

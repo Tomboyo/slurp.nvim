@@ -5,7 +5,7 @@
   `(let [b# (require :plenary.busted)]
      (b#.it ,name (fn [] ,(unpack body)))))
 
-(local nvim (require :util/nvim))
+(local nvim (require :slurp/util/nvim))
 (local slurp (require :slurp))
 
 (describe

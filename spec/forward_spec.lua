@@ -1,4 +1,4 @@
-local nvim = require("util/nvim")
+local nvim = require("slurp/util/nvim")
 local slurp = require("slurp")
 do
   local b_2_auto = require("plenary.busted")
