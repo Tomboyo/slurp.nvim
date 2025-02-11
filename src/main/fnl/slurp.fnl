@@ -3,52 +3,27 @@
 (local tree (require :slurp/tree))
 (local iter (require :slurp/iter))
 
-; Note: in fennel, "foo" is a string node with children (" string_content "). If
-; the cursor is on either quote, then the node under the cursor is the whole
-; string. If the cursor is on the content, then the node under the cursor is
-; only the content. Consider the following state:
-;    [:foo :b|ar :baz]
-; (selectNode :inner) will only select 'bar'.
-;    [:foo |:bar :baz]
-; will select 'bar'
-;   |[:foo :bar :baz]
-; will select ':foo :bar :baz'. So the user will need ways to say _which_ node
-; to get the inside selection of (e.g. <LL>ei) v <LL>ei] )
-(fn selectNode [arg1 arg2]
-  "(selectNode node
-               | node opts
-               | opts
-               | <no arguments>)
-   Selects a given node (or the node under the cursor if none is given)
-   according to passed options, if any. If {inner = true}, the 'contents' of the
-   node are selected only."
-  (fn nth [tab n]
-    (if (< 0 n)
-        (. tab n)
-        (. tab (+ (length tab) n 1))))
-  (fn innerRange [n]
-    (let [cs (->> (tree.visualChildren n)
-                  (iter.collect))]
-      (case (length cs)
-        0 [(vts.get_node_range n)]
-        1 [(vts.get_node_range n)]
-        2 (tree.rangeBetween (nth cs 1) (nth cs 2) {:exclusive true})
-        3 [(vts.get_node_rage (nth cs 2))]
-        _ (tree.rangeBetween (nth cs 2) (nth cs -2)))))
-  (let [[node opts] (case [arg1 arg2]
-                      [nil  nil] [(vts.get_node) {}]
-                      (where [arg1 nil] (= :table (type arg1)))
-                        [(vts.get_node) arg1]
-                      [arg1 nil] [arg1 {}]
-                      _ [arg1 arg2])
-        range (case opts
-                {:inner true} (innerRange node)
-                _ [(vts.get_node_range node)])]
-    (ts.update_selection 0 range)))
+; TODO
+; want an API like
+; (slurp.select (->> (slurp.find [:binding_form :list :array :set :etc])
+;                    slurp.innerRange :fennel))
+; to select the inside of a node. Find locates a node of the given type by going
+; up the tree, then we have some functions to manipulat the node selection.
+; These have to be by grammar to be the most accurate. If we tried to do this
+; sort of thing in a language-unaware manner, it'd be impossible for the user to
+; say something like "find the first let binding surrounding the cursor" because
+; there's no way to match by delimiter or something.
 
-(fn select [nodeOrRange]
-  (let [nodeOrRange (or nodeOrRange (vts.get_node))]
-      _ (ts.update_selection 0 (or nodeOrRange (vts.get_node)))))
+(fn slurpSelect [nodeOrRange]
+  (vim.print nodeOrRange)
+  (if (= nil nodeOrRange)
+      nil
+      (ts.update_selection 0 nodeOrRange)))
+
+(fn find [types root]
+  (let [root (or root (vts.get_node))]
+    ; TODO
+    root))
 
 (fn innerRange [n]
   (if n
@@ -236,4 +211,4 @@
  :forwardIntoElement forwardIntoElement
  :forwardOverElement forwardOverElement
  ;text objects
- :selectNode selectNode}
+ :select slurpSelect}

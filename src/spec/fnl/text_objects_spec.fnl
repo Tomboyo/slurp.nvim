@@ -5,20 +5,12 @@
   `(let [b# (require :plenary.busted)]
      (b#.it ,name (fn [] ,(unpack body)))))
 
+(local busted (require :plenary.busted))
 (local nvim (require :slurp/util/nvim))
 (local slurp (require :slurp))
 
 (describe
   "select"
-  (it
-    "selects the node under the cursor when given no args"
-    (nvim.withBuf
-      (fn [buf]
-        (nvim.setup buf ["(foo b|ar baz)"])
-        (slurp.selectNode)
-        (assert.is.same
-          ["bar"]
-          (nvim.actualSelection buf)))))
   (it
     "selects a given node"
     (nvim.withBuf
@@ -26,7 +18,7 @@
         (nvim.setup buf ["(foo |bar baz)"])
         (let [n (vim.treesitter.get_node)
               p (n:parent)]
-          (slurp.selectNode p))
+          (slurp.select p))
         (assert.is.same
           ["(foo bar baz)"]
           (nvim.actualSelection buf)))))
@@ -35,43 +27,20 @@
     (nvim.withBuf
       (fn [buf]
         (nvim.setup buf ["|(foo" "bar" "baz)"])
-        (slurp.selectNode)
+        (slurp.select (vim.treesitter.get_node))
         (assert.is.same
           ["(foo" "bar" "baz)"]
           (nvim.actualSelection buf)))))
-  (describe
-    "when {:inner true}"
-    (it
-      "selects the contents of the node under the cursor"
-      (nvim.withBuf
-        (fn [buf]
-          (nvim.setup buf ["|(foo bar baz)"])
-          (slurp.selectNode {:inner true})
-          (assert.is.same ["foo bar baz"] (nvim.actualSelection buf)))))
-    (it
-      "selects the contents of a given node"
-      (nvim.withBuf
-        (fn [buf]
-          (nvim.setup buf ["(foo |bar baz)"])
-          (let [n (vim.treesitter.get_node)]
-            (slurp.selectNode (n:parent) {:inner true}))
-          (assert.is.same ["foo bar baz"] (nvim.actualSelection buf)))))
-    (it
-      "selects an entire atomic node"
-      (nvim.withBuf
-        (fn [buf]
-          (nvim.setup buf ["|foo"])
-          (slurp.selectNode {:inner true})
-          (assert.is.same ["foo"] (nvim.actualSelection buf)))))
-    (it
-      "selects the whitespace content of an empty node"
-      (nvim.withBuf
-        (fn [buf]
-          (nvim.setup buf ["|(   )"])
-          (slurp.selectNode {:inner true})
-          (assert.is.same
-            ["   "]
-            (nvim.actualSelection buf)))))))
+  (it
+    "selects nothing when given nil"
+    (nvim.withBuf
+      (fn [buf]
+        (nvim.setup buf ["|(foo bar baz)"])
+        (slurp.select)
+        (assert.is.same
+          ["("] ; no difference between a zero-selection and what's under the
+                ; cursor
+          (nvim.actualSelection buf)))))
+  )
 
-nil
-
+  nil

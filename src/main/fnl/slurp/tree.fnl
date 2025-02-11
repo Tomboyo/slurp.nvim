@@ -8,6 +8,12 @@
     (error "missing root node"))
   (iter.iterator m.nextNamedParent root))
 
+(fn m.parents [root]
+  "Returns an iterator over root and its parents (named or anonymous)"
+  (when (= nil root)
+    (error "missing root node"))
+  (iter.iterator (fn [n] (n:parent) root)))
+
 (fn m.nextNamedParent [node]
   (let [p (node:parent)]
     (if p
@@ -71,16 +77,6 @@
        (iter.map (fn [c] [c (vim.treesitter.get_node_text c 0)]))
        (iter.filter (fn [[_ t]] (notBlank? t)))
        (iter.map (fn [[c _]] c))))
-
-(fn m.visualChild [node n]
-  "Get the nth child of node which has corresponding text, 0-based."
-  (let [children (m.visualChildren node) 
-        count (length children)
-        m (if (< n 0)
-              (+ count n)
-              (+ n 1))
-        x (. children m)]
-    (. x 1)))
 
 (fn m.rangeBetween [s e opt]
   "Get the [start row, col, end row, col] range between two nodes. If
