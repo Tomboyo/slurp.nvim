@@ -78,10 +78,33 @@ m.find = function(pred, iter)
   return m.filter(pred, iter)()
 end
 --[[ (let [ints (m.iterator (fn [i] (if (< i 10) (+ i 1))) 0)] (m.find (fn [x] (= x 3)) ints)) (let [it (m.iterator (fn [] nil) nil)] (m.find (fn [x] (error "I am never called")) it)) ]]
-local function _12_(_11_)
-  local i = _11_[1]
-  local line = _11_[2]
-  return string.find(line, "|")
+m.nth = function(n, iter)
+  local el = iter()
+  local _11_ = {n, el}
+  if (true and (_11_[2] == nil)) then
+    local _ = _11_[1]
+    return nil
+  elseif ((_11_[1] == 0) and true) then
+    local _ = _11_[2]
+    return el
+  else
+    local _ = _11_
+    return m.nth((n - 1), iter)
+  end
 end
-m.find(_12_, m.indexed(m.iterate({"cats", "dog|s", "skunks"})))
+--[[ (let [iter (m.stateful (ipairs ["a" "b" "c" "d"]))] (m.nth 2 iter)) ]]
+m.collect = function(iter)
+  local tbl_21_auto = {}
+  local i_22_auto = 0
+  for v in iter do
+    local val_23_auto = v
+    if (nil ~= val_23_auto) then
+      i_22_auto = (i_22_auto + 1)
+      tbl_21_auto[i_22_auto] = val_23_auto
+    else
+    end
+  end
+  return tbl_21_auto
+end
+--[[ (let [iter (m.stateful (ipairs ["a" "b" "c"]))] (m.collect iter)) ]]
 return m

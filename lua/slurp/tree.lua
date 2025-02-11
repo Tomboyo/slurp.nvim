@@ -79,9 +79,45 @@ m.namedChild = function(node, offset)
   end
   return node:named_child(index)
 end
-m.rangeBetween = function(s, e)
-  local a, b, _, _0 = vim.treesitter.get_node_range(s)
-  local _1, _2, g, h = vim.treesitter.get_node_range(e)
-  return {a, b, g, h}
+m.visualChildren = function(node)
+  local function notBlank_3f(s)
+    return not ((nil == s) or ("" == s))
+  end
+  local function _13_(_12_)
+    local c = _12_[1]
+    local _ = _12_[2]
+    return c
+  end
+  local function _15_(_14_)
+    local _ = _14_[1]
+    local t = _14_[2]
+    return notBlank_3f(t)
+  end
+  local function _16_(c)
+    return {c, vim.treesitter.get_node_text(c, 0)}
+  end
+  return iter.map(_13_, iter.filter(_15_, iter.map(_16_, node:iter_children())))
+end
+m.visualChild = function(node, n)
+  local children = m.visualChildren(node)
+  local count = #children
+  local m0
+  if (n < 0) then
+    m0 = (count + n)
+  else
+    m0 = (n + 1)
+  end
+  local x = children[m0]
+  return x[1]
+end
+m.rangeBetween = function(s, e, opt)
+  local opt0 = (opt or {})
+  local a, b, c, d = vim.treesitter.get_node_range(s)
+  local e0, f, g, h = vim.treesitter.get_node_range(e)
+  if opt0.exclusive then
+    return {c, d, e0, f}
+  else
+    return {a, b, g, h}
+  end
 end
 return m

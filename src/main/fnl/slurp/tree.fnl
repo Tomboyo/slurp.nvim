@@ -65,9 +65,31 @@
                   offset)]
     (node:named_child index)))
 
-(fn m.rangeBetween [s e]
-  (let [(a b _ _) (vim.treesitter.get_node_range s)
-        (_ _ g h) (vim.treesitter.get_node_range e)]
-    [a b g h]))
+(fn m.visualChildren [node]
+  (fn notBlank? [s] (not (or (= nil s) (= "" s))))
+  (->> (node:iter_children)
+       (iter.map (fn [c] [c (vim.treesitter.get_node_text c 0)]))
+       (iter.filter (fn [[_ t]] (notBlank? t)))
+       (iter.map (fn [[c _]] c))))
+
+(fn m.visualChild [node n]
+  "Get the nth child of node which has corresponding text, 0-based."
+  (let [children (m.visualChildren node) 
+        count (length children)
+        m (if (< n 0)
+              (+ count n)
+              (+ n 1))
+        x (. children m)]
+    (. x 1)))
+
+(fn m.rangeBetween [s e opt]
+  "Get the [start row, col, end row, col] range between two nodes. If
+  :exclusive=true, then the range excludes the start and end nodes."
+  (let [opt (or opt {})
+        (a b c d) (vim.treesitter.get_node_range s)
+        (e f g h) (vim.treesitter.get_node_range e)]
+    (if (. opt :exclusive)
+        [c d e f]
+        [a b g h])))
 
 m

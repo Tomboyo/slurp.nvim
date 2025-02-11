@@ -108,10 +108,27 @@
     (m.find (fn [x] (error "I am never called")) it))
   )
 
-(->> ["cats" "dog|s" "skunks"]
-                  (m.iterate)
-                  (m.indexed)
-                  (m.find (fn [[i line]]
-                            (string.find line "|"))))
+(fn m.nth [n iter]
+  "Get the nth element of iter, 0-based."
+  (let [el (iter)]
+    (case [n el]
+          [_ nil] nil
+          [0 _] el
+          _ (m.nth (- n 1) iter))))
+
+(comment
+  (let [iter (m.stateful (ipairs [:a :b :c :d]))]
+    (m.nth 2 iter))
+  )
+
+(fn m.collect [iter]
+  "Collect the iter to a table"
+  (icollect [v iter]
+    v))
+
+(comment
+  (let [iter (m.stateful (ipairs [:a :b :c]))]
+    (m.collect iter))
+  )
 
 m

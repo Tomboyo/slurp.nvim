@@ -3,8 +3,29 @@
 (local tree (require :slurp/tree))
 (local iter (require :slurp/iter))
 
+(fn selectNode [node opts]
+  (fn nth [tab n]
+    (if (< 0 n)
+        (. tab n)
+        (. tab (+ (length tab) n 1))))
+  (fn innerRange [n]
+    (let [cs (->> (tree.visualChildren n)
+                  (iter.collect))]
+      (case (length cs)
+        0 (vts.get_node_range n)
+        1 (vts.get_node_range n)
+        2 (tree.rangeBetween (nth cs 1) (nth cs 2) {:exclusive true})
+        3 (vts.get_node_rage (nth cs 2))
+        _ (tree.rangeBetween (nth cs 2) (nth cs -2)))))
+  (let [node (or node (vts.get_node))
+        range (case opts
+                {:inner true} (innerRange node)
+                _ [(vts.get_node_range node)])]
+    (ts.update_selection 0 range)))
+
 (fn select [nodeOrRange]
-  (when nodeOrRange (ts.update_selection 0 nodeOrRange)))
+  (let [nodeOrRange (or nodeOrRange (vts.get_node))]
+      _ (ts.update_selection 0 (or nodeOrRange (vts.get_node)))))
 
 (fn innerRange [n]
   (if n
@@ -192,4 +213,4 @@
  :forwardIntoElement forwardIntoElement
  :forwardOverElement forwardOverElement
  ;text objects
- :select select}
+ :selectNode selectNode}
