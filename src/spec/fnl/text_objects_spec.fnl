@@ -11,13 +11,24 @@
 (describe
   "select"
   (it
-    "selects the node under the cursor by default"
+    "selects the node under the cursor when given no args"
     (nvim.withBuf
       (fn [buf]
         (nvim.setup buf ["(foo b|ar baz)"])
         (slurp.selectNode)
         (assert.is.same
           ["bar"]
+          (nvim.actualSelection buf)))))
+  (it
+    "selects a given node"
+    (nvim.withBuf
+      (fn [buf]
+        (nvim.setup buf ["(foo |bar baz)"])
+        (let [n (vim.treesitter.get_node)
+              p (n:parent)]
+          (slurp.selectNode p))
+        (assert.is.same
+          ["(foo bar baz)"]
           (nvim.actualSelection buf)))))
   (it
     "selects multiline nodes"
@@ -28,45 +39,39 @@
         (assert.is.same
           ["(foo" "bar" "baz)"]
           (nvim.actualSelection buf)))))
-  (it
-    "selects 0,0-offset end-exclusive ranges"
-    (nvim.withBuf
-      (fn [buf]
-        (nvim.setup buf ["|(foo bar baz)"])
-        (slurp.selectNode [0 5 0 8])
-        (assert.is.same
-          ["bar"]
-          (nvim.actualSelection buf)))))
-  (it
-    "selects multiline ranges"
-    (nvim.withBuf
-      (fn [buf]
-        (nvim.setup buf ["|(foo" "bar" "baz)"])
-        (slurp.selectNode [0 0 2 4])
-        (assert.is.same
-          ["(foo" "bar" "baz)"]
-          (nvim.actualSelection buf)))))
   (describe
     "when {:inner true}"
     (it
-      "selects the contents of a node, excluding its first and last children"
+      "selects the contents of the node under the cursor"
       (nvim.withBuf
         (fn [buf]
-          (nvim.setup buf ["|(foo" "bar" "baz)"])
-          (slurp.selectNode nil {:inner true})
+          (nvim.setup buf ["|(foo bar baz)"])
+          (slurp.selectNode {:inner true})
+          (assert.is.same ["foo bar baz"] (nvim.actualSelection buf)))))
+    (it
+      "selects the contents of a given node"
+      (nvim.withBuf
+        (fn [buf]
+          (nvim.setup buf ["(foo |bar baz)"])
+          (let [n (vim.treesitter.get_node)]
+            (slurp.selectNode (n:parent) {:inner true}))
+          (assert.is.same ["foo bar baz"] (nvim.actualSelection buf)))))
+    (it
+      "selects an entire atomic node"
+      (nvim.withBuf
+        (fn [buf]
+          (nvim.setup buf ["|foo"])
+          (slurp.selectNode {:inner true})
+          (assert.is.same ["foo"] (nvim.actualSelection buf)))))
+    (it
+      "selects the whitespace content of an empty node"
+      (nvim.withBuf
+        (fn [buf]
+          (nvim.setup buf ["|(   )"])
+          (slurp.selectNode {:inner true})
           (assert.is.same
-            ["foo" "bar" "baz"]
-            (nvim.actualSelection buf))))))
-  (it
-    "selects the whitespace content of a node with only unnamed children"
-    (nvim.withBuf
-      (fn [buf]
-        (nvim.setup buf ["|(   )"])
-        (slurp.selectNode nil {:inner true})
-        (assert.is.same
-          ["   "]
-          (nvim.actualSelection buf)))))
-  )
+            ["   "]
+            (nvim.actualSelection buf)))))))
 
 nil
 

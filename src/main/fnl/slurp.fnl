@@ -3,7 +3,25 @@
 (local tree (require :slurp/tree))
 (local iter (require :slurp/iter))
 
-(fn selectNode [node opts]
+; Note: in fennel, "foo" is a string node with children (" string_content "). If
+; the cursor is on either quote, then the node under the cursor is the whole
+; string. If the cursor is on the content, then the node under the cursor is
+; only the content. Consider the following state:
+;    [:foo :b|ar :baz]
+; (selectNode :inner) will only select 'bar'.
+;    [:foo |:bar :baz]
+; will select 'bar'
+;   |[:foo :bar :baz]
+; will select ':foo :bar :baz'. So the user will need ways to say _which_ node
+; to get the inside selection of (e.g. <LL>ei) v <LL>ei] )
+(fn selectNode [arg1 arg2]
+  "(selectNode node
+               | node opts
+               | opts
+               | <no arguments>)
+   Selects a given node (or the node under the cursor if none is given)
+   according to passed options, if any. If {inner = true}, the 'contents' of the
+   node are selected only."
   (fn nth [tab n]
     (if (< 0 n)
         (. tab n)
@@ -12,12 +30,17 @@
     (let [cs (->> (tree.visualChildren n)
                   (iter.collect))]
       (case (length cs)
-        0 (vts.get_node_range n)
-        1 (vts.get_node_range n)
+        0 [(vts.get_node_range n)]
+        1 [(vts.get_node_range n)]
         2 (tree.rangeBetween (nth cs 1) (nth cs 2) {:exclusive true})
-        3 (vts.get_node_rage (nth cs 2))
+        3 [(vts.get_node_rage (nth cs 2))]
         _ (tree.rangeBetween (nth cs 2) (nth cs -2)))))
-  (let [node (or node (vts.get_node))
+  (let [[node opts] (case [arg1 arg2]
+                      [nil  nil] [(vts.get_node) {}]
+                      (where [arg1 nil] (= :table (type arg1)))
+                        [(vts.get_node) arg1]
+                      [arg1 nil] [arg1 {}]
+                      _ [arg1 arg2])
         range (case opts
                 {:inner true} (innerRange node)
                 _ [(vts.get_node_range node)])]
