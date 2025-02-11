@@ -40,7 +40,27 @@
         (assert.is.same
           ["("] ; no difference between a zero-selection and what's under the
                 ; cursor
-          (nvim.actualSelection buf)))))
-  )
+          (nvim.actualSelection buf))))))
+
+(describe
+    "find"
+    (it
+      "gets a node of any matching type"
+      (nvim.withBuf
+        (fn [buf]
+          (nvim.setup buf ["(:foo :b|ar :baz)"])
+          (slurp.select (slurp.find [:list :string_content :symbol]))
+          (assert.is.same
+            ["bar"]
+            (nvim.actualSelection buf)))))
+    (it
+      "gets the closest node of any matching type"
+      (nvim.withBuf
+        (fn [buf]
+          (nvim.setup buf ["(:foo :b|ar :baz)"])
+          (slurp.select (slurp.find [:symbol :list]))
+          (assert.is.same
+            ["(:foo :bar :baz)"]
+            (nvim.actualSelection buf))))))
 
   nil

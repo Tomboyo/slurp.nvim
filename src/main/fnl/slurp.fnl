@@ -15,15 +15,18 @@
 ; there's no way to match by delimiter or something.
 
 (fn slurpSelect [nodeOrRange]
-  (vim.print nodeOrRange)
   (if (= nil nodeOrRange)
       nil
       (ts.update_selection 0 nodeOrRange)))
 
 (fn find [types root]
   (let [root (or root (vts.get_node))]
-    ; TODO
-    root))
+    (iter.find
+      (fn [n] 
+        (iter.find
+                (fn [type] (= type (n:type)))
+                (iter.stateful (ipairs types))))
+      (tree.namedParents root))))
 
 (fn innerRange [n]
   (if n
@@ -211,4 +214,5 @@
  :forwardIntoElement forwardIntoElement
  :forwardOverElement forwardOverElement
  ;text objects
- :select slurpSelect}
+ :select slurpSelect
+ :find find}

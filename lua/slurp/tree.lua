@@ -8,17 +8,6 @@ m.namedParents = function(root)
   end
   return iter.iterator(m.nextNamedParent, root)
 end
-m.parents = function(root)
-  if (nil == root) then
-    error("missing root node")
-  else
-  end
-  local function _3_(n)
-    n:parent()
-    return root
-  end
-  return iter.iterator(_3_)
-end
 m.nextNamedParent = function(node)
   local p = node:parent()
   if p then
@@ -63,9 +52,9 @@ m.nextLexicalOuterNode = function(node, line, char)
 end
 m.firstSurroundingNode = function(ldelim, rdelim, node)
   local node0 = (node or vim.treesitter.get_node())
-  local _let_10_ = m.delimiters(node0)
-  local open = _let_10_[1]
-  local close = _let_10_[2]
+  local _let_8_ = m.delimiters(node0)
+  local open = _let_8_[1]
+  local close = _let_8_[2]
   if (open and close and (ldelim == vim.treesitter.get_node_text(open, 0)) and (rdelim == vim.treesitter.get_node_text(close, 0))) then
     return {node0, open, close}
   else
@@ -94,20 +83,20 @@ m.visualChildren = function(node)
   local function notBlank_3f(s)
     return not ((nil == s) or ("" == s))
   end
-  local function _15_(_14_)
-    local c = _14_[1]
-    local _ = _14_[2]
+  local function _13_(_12_)
+    local c = _12_[1]
+    local _ = _12_[2]
     return c
   end
-  local function _17_(_16_)
-    local _ = _16_[1]
-    local t = _16_[2]
+  local function _15_(_14_)
+    local _ = _14_[1]
+    local t = _14_[2]
     return notBlank_3f(t)
   end
-  local function _18_(c)
+  local function _16_(c)
     return {c, vim.treesitter.get_node_text(c, 0)}
   end
-  return iter.map(_15_, iter.filter(_17_, iter.map(_18_, node:iter_children())))
+  return iter.map(_13_, iter.filter(_15_, iter.map(_16_, node:iter_children())))
 end
 m.rangeBetween = function(s, e, opt)
   local opt0 = (opt or {})

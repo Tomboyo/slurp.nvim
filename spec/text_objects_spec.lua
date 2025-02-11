@@ -45,4 +45,32 @@ do
   end
   b_2_auto.describe("select", _1_)
 end
+do
+  local b_2_auto = require("plenary.busted")
+  local function _8_()
+    do
+      local b_2_auto0 = require("plenary.busted")
+      local function _9_()
+        local function _10_(buf)
+          nvim.setup(buf, {"(:foo :b|ar :baz)"})
+          slurp.select(slurp.find({"list", "string_content", "symbol"}))
+          return assert.is.same({"bar"}, nvim.actualSelection(buf))
+        end
+        return nvim.withBuf(_10_)
+      end
+      b_2_auto0.it("gets a node of any matching type", _9_)
+    end
+    local b_2_auto0 = require("plenary.busted")
+    local function _11_()
+      local function _12_(buf)
+        nvim.setup(buf, {"(:foo :b|ar :baz)"})
+        slurp.select(slurp.find({"symbol", "list"}))
+        return assert.is.same({"(:foo :bar :baz)"}, nvim.actualSelection(buf))
+      end
+      return nvim.withBuf(_12_)
+    end
+    return b_2_auto0.it("gets the closest node of any matching type", _11_)
+  end
+  b_2_auto.describe("find", _8_)
+end
 return nil

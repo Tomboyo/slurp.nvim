@@ -8,12 +8,6 @@
     (error "missing root node"))
   (iter.iterator m.nextNamedParent root))
 
-(fn m.parents [root]
-  "Returns an iterator over root and its parents (named or anonymous)"
-  (when (= nil root)
-    (error "missing root node"))
-  (iter.iterator (fn [n] (n:parent) root)))
-
 (fn m.nextNamedParent [node]
   (let [p (node:parent)]
     (if p
