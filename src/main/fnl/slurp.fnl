@@ -20,13 +20,15 @@
       (ts.update_selection 0 nodeOrRange)))
 
 (fn find [types root]
-  (let [root (or root (vts.get_node))]
-    (iter.find
-      (fn [n] 
+  (if (= nil types)
+      (vts.get_node)
+      (let [root (or root (vts.get_node))]
         (iter.find
-                (fn [type] (= type (n:type)))
-                (iter.stateful (ipairs types))))
-      (tree.namedParents root))))
+          (fn [n] 
+            (iter.find
+                    (fn [type] (= type (n:type)))
+                    (iter.stateful (ipairs types))))
+          (tree.namedParents root)))))
 
 (fn innerRange [n]
   (if n
