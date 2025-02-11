@@ -144,67 +144,7 @@
         (e f g h) (vts.get_node_range p)]
     (vim.api.nvim_buf_set_text 0 e f g h lines)))
 
-;; Plug maps
-; Element selection
-(vim.keymap.set [:v :o] "<Plug>(slurp-select-element)"
-                (fn [] (select (vts.get_node))))
-(vim.keymap.set [:v :o]
-                "<Plug>(slurp-select-inside-element)"
-                (fn [] (select (innerRange (vts.get_node)))))
-(vim.keymap.set [:v :o]
-                "<Plug>(slurp-select-outside-element)"
-                (fn [] (select (surroundingNode (vts.get_node)))))
-(vim.keymap.set [:v :o] "<Plug>(slurp-select-(element))"
-                (fn [] (select (findDelimitedRange "(" ")" (vts.get_node)))))
-(vim.keymap.set [:v :o] "<Plug>(slurp-select-[element])"
-                (fn [] (select (findDelimitedRange "[" "]" (vts.get_node)))))
-(vim.keymap.set [:v :o] "<Plug>(slurp-select-{element})"
-                (fn [] (select (findDelimitedRange "{" "}" (vts.get_node)))))
-(vim.keymap.set [:v :o] "<Plug>(slurp-select-inside-(element))"
-                (fn [] (select (innerRange (findDelimitedRange "(" ")" (vts.get_node))))))
-(vim.keymap.set [:v :o] "<Plug>(slurp-select-inside-[element])"
-                (fn [] (select (innerRange (findDelimitedRange "[" "]" (vts.get_node))))))
-(vim.keymap.set [:v :o] "<Plug>(slurp-select-inside-{element})"
-                (fn [] (select (innerRange (findDelimitedRange "{" "}" (vts.get_node))))))
-(vim.keymap.set [:v :o] "<Plug>(slurp-select-outside-(element))"
-                (fn [] (select (surroundingNode (findDelimitedRange "(" ")" (vts.get_node))))))
-(vim.keymap.set [:v :o] "<Plug>(slurp-select-outside-[element])"
-                (fn [] (select (surroundingNode (findDelimitedRange "[" "]" (vts.get_node))))))
-(vim.keymap.set [:v :o] "<Plug>(slurp-select-outside-{element})"
-                (fn [] (select (surroundingNode (findDelimitedRange "{" "}" (vts.get_node))))))
-
-; motion
-(vim.keymap.set [:n :v :o]
-              "<Plug>(slurp-forward-into-element)"
-              forwardIntoElement
-              {})
-(vim.keymap.set [:n :v :o]
-              "<Plug>(slurp-forward-over-element)"
-              forwardOverElement
-              {})
-
-; manipulation
-(vim.keymap.set [:n]
-                "<Plug>(slurp-slurp-close-paren-forward)"
-                (fn [] (slurpForward ")")))
-(vim.keymap.set [:n]
-                "<Plug>(slurp-slurp-open-paren-backward)"
-                (fn [] (slurpBackward "(")))
-(vim.keymap.set [:n]
-                "<Plug>(slurp-barf-open-paren-forward)"
-                (fn [] (barfForward "(")))
-(vim.keymap.set [:n]
-                "<Plug>(slurp-barf-close-paren-backward)"
-                (fn [] (barfBackward ")")))
-(vim.keymap.set [:n]
-                "<Plug>(slurp-replace-parent)"
-                replaceParent)
-(vim.keymap.set [:n]
-                "<Plug>(slurp-delete-surrounding-())"
-                (fn [] (unwrap "(" ")")))
-
-; TODO: once all modules are exported, delete <Plug>s in favor of README. These
-; functions need to be exposed so users can customize mappings per language.
+; TODO: usage in README
 {;manipulation
  :slurpForward slurpForward
  :slurpBackward slurpBackward
