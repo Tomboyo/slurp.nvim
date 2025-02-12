@@ -30,14 +30,14 @@
                     (iter.stateful (ipairs types))))
           (tree.namedParents root)))))
 
-(fn forwardIntoElement []
+(fn forwardInto []
   (let [[_ line col _] (vim.fn.getpos ".")]
     (ts.goto_node (tree.nextLexicalInnerNode
                     (ts.get_node_at_cursor)
                     (- line 1)
                     (- col 1)))))
 
-(fn forwardOverElement []
+(fn forwardOver []
   (let [[_ line col _] (vim.fn.getpos ".")
         node (vts.get_node)]
     (ts.goto_node (tree.nextLexicalOuterNode node (- line 1) (- col 1)))))
@@ -46,8 +46,8 @@
 {;manipulation
  ;TODO
  ;motion
- :forwardIntoElement forwardIntoElement
- :forwardOverElement forwardOverElement
+ :forwardInto forwardInto
+ :forwardOver forwardOver
  ;text objects
  :select slurpSelect
  :find find}

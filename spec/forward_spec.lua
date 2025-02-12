@@ -8,7 +8,7 @@ do
       local function _2_()
         local function _3_(buf)
           nvim.setup(buf, {"(|foo (bar baz) bang)"})
-          slurp.forwardIntoElement()
+          slurp.forwardInto()
           return assert.is.same({"(foo |(bar baz) bang)"}, nvim.actual(buf, {cursor = true}))
         end
         return nvim.withBuf(_3_)
@@ -20,7 +20,7 @@ do
       local function _4_()
         local function _5_(buf)
           nvim.setup(buf, {"(foo |(bar baz) bang)"})
-          slurp.forwardIntoElement()
+          slurp.forwardInto()
           return assert.is.same({"(foo (|bar baz) bang)"}, nvim.actual(buf, {cursor = true}))
         end
         return nvim.withBuf(_5_)
@@ -31,7 +31,7 @@ do
     local function _6_()
       local function _7_(buf)
         nvim.setup(buf, {"(|foo", "bar", "baz)"})
-        slurp.forwardIntoElement()
+        slurp.forwardInto()
         return assert.is.same({"(foo", "|bar", "baz)"}, nvim.actual(buf, {cursor = true}))
       end
       return nvim.withBuf(_7_)
@@ -48,7 +48,7 @@ do
       local function _9_()
         local function _10_(buf)
           nvim.setup(buf, {"(|foo (bar baz) bang)"})
-          slurp.forwardOverElement()
+          slurp.forwardOver()
           return assert.is.same({"(foo |(bar baz) bang)"}, nvim.actual(buf, {cursor = true}))
         end
         return nvim.withBuf(_10_)
@@ -60,7 +60,7 @@ do
       local function _11_()
         local function _12_(buf)
           nvim.setup(buf, {"(foo |(bar baz) bang)"})
-          slurp.forwardOverElement()
+          slurp.forwardOver()
           return assert.is.same({"(foo (bar baz) |bang)"}, nvim.actual(buf, {cursor = true}))
         end
         return nvim.withBuf(_12_)
@@ -71,7 +71,7 @@ do
     local function _13_()
       local function _14_(buf)
         nvim.setup(buf, {"(|foo", "(bar baz)", "bang)"})
-        slurp.forwardOverElement()
+        slurp.forwardOver()
         return assert.is.same({"(foo", "|(bar baz)", "bang)"}, nvim.actual(buf, {cursor = true}))
       end
       return nvim.withBuf(_14_)

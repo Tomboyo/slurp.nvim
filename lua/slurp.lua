@@ -23,7 +23,7 @@ local function find(types, root)
     return iter.find(_2_, tree.namedParents(root0))
   end
 end
-local function forwardIntoElement()
+local function forwardInto()
   local _let_5_ = vim.fn.getpos(".")
   local _ = _let_5_[1]
   local line = _let_5_[2]
@@ -31,7 +31,7 @@ local function forwardIntoElement()
   local _0 = _let_5_[4]
   return ts.goto_node(tree.nextLexicalInnerNode(ts.get_node_at_cursor(), (line - 1), (col - 1)))
 end
-local function forwardOverElement()
+local function forwardOver()
   local _let_6_ = vim.fn.getpos(".")
   local _ = _let_6_[1]
   local line = _let_6_[2]
@@ -40,4 +40,4 @@ local function forwardOverElement()
   local node = vts.get_node()
   return ts.goto_node(tree.nextLexicalOuterNode(node, (line - 1), (col - 1)))
 end
-return {forwardIntoElement = forwardIntoElement, forwardOverElement = forwardOverElement, select = slurpSelect, find = find}
+return {forwardInto = forwardInto, forwardOver = forwardOver, select = slurpSelect, find = find}

@@ -20,7 +20,7 @@
     "moves the cursor to the start of the next element"
     (nvim.withBuf (fn [buf]
       (nvim.setup buf ["(|foo (bar baz) bang)"])
-      (slurp.forwardIntoElement)
+      (slurp.forwardInto)
       (assert.is.same
         ["(foo |(bar baz) bang)"]
         (nvim.actual buf {:cursor true})))))
@@ -29,7 +29,7 @@
     (nvim.withBuf
       (fn [buf]
         (nvim.setup buf ["(foo |(bar baz) bang)"])
-        (slurp.forwardIntoElement)
+        (slurp.forwardInto)
         (assert.is.same
           ["(foo (|bar baz) bang)"]
           (nvim.actual buf {:cursor true})))))
@@ -38,7 +38,7 @@
     (nvim.withBuf
       (fn [buf]
         (nvim.setup buf ["(|foo" "bar" "baz)"])
-        (slurp.forwardIntoElement)
+        (slurp.forwardInto)
         (assert.is.same
           ["(foo" "|bar" "baz)"]
           (nvim.actual buf {:cursor true}))))))
@@ -50,7 +50,7 @@
     (nvim.withBuf
       (fn [buf]
         (nvim.setup buf ["(|foo (bar baz) bang)"])
-        (slurp.forwardOverElement)
+        (slurp.forwardOver)
         (assert.is.same
           ["(foo |(bar baz) bang)"]
           (nvim.actual buf {:cursor true})))))
@@ -59,7 +59,7 @@
     (nvim.withBuf
       (fn [buf]
         (nvim.setup buf ["(foo |(bar baz) bang)"])
-        (slurp.forwardOverElement)
+        (slurp.forwardOver)
         (assert.is.same
           ["(foo (bar baz) |bang)"]
           (nvim.actual buf {:cursor true})))))
@@ -68,7 +68,7 @@
     (nvim.withBuf
       (fn [buf]
         (nvim.setup buf ["(|foo" "(bar baz)" "bang)"])
-        (slurp.forwardOverElement)
+        (slurp.forwardOver)
         (assert.is.same
           ["(foo" "|(bar baz)" "bang)"]
           (nvim.actual buf {:cursor true}))))))
