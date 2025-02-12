@@ -26,6 +26,27 @@
     (icollect [v it] v))
   )
 
+(fn m.concat [& iters]
+  (var i 1)
+  (fn f []
+    (let [iter (. iters i)]
+      (if (= nil iter)
+          nil
+          (let [x (iter)]
+            (if (= nil x)
+                (do
+                  (set i (+ 1 i))
+                  (f))
+                x))))))
+
+(comment
+  (let [a (m.iterate [:a :b :c])
+        b (m.iterate [1 2 3])
+        c (m.concat a b)]
+    (m.collect c))
+  (m.collect (m.concat))
+  )
+
 (fn m.stateful [iter a i]
   "Given a stateless iter (like ipairs), return a stateful iter that yields each
   successive value of the iter, but not the state. E.g.

@@ -1,7 +1,7 @@
 local iter = require("slurp/iter")
 local m = {}
-m.listLike = {"binding_pair", "case_form", "case_pair", "fn_form", "let_form", "let_vars", "list", "match_form", "sequence", "sequence_arguments", "table", "table_binding"}
 m.squareList = {"let_vars", "sequence", "sequence_arguments"}
-m.roundList = {"list"}
-m.curlyList = {"table"}
+m.roundList = {"case_form", "let_form", "fn_form", "list", "local_form", "match_form", "var_form"}
+m.curlyList = {"table", "table_binding"}
+m.anyList = iter.collect(iter.concat(iter.iterate(m.squareList), iter.iterate(m.roundList), iter.iterate(m.curlyList)))
 return m
