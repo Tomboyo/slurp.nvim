@@ -8,6 +8,20 @@
     (error "missing root node"))
   (iter.iterator m.nextNamedParent root))
 
+(fn m.namedIblings [root]
+  (when (= nil root)
+    (error "missing root node"))
+  (iter.iterator m.nextNamedIbling root))
+
+(fn m.isLexicallyAfter [root row col]
+  "True if the node's row and col is after the given 1,1-offset row and col."
+  ; get_node_range is 0-basec.
+  (let [(l c) (vim.treesitter.get_node_range root)
+        l (+ 1 l)
+        c (+ 1 c)]
+    (or (> l row)
+        (and (= l row) (> c col)))))
+
 (fn m.nextNamedParent [node]
   (let [p (node:parent)]
     (if p
@@ -16,16 +30,20 @@
             (m.nextNamedParent p))
         nil)))
 
-(fn nextNamedIbling [node]
+(fn m.nextNamedIbling [node]
   "Get the next sibling or nibling"
+  (when (= nil node)
+    (error "nil node"))
   (if (node:next_named_sibling)
       (node:next_named_sibling)
-      (nextNamedIbling (m.nextNamedParent node))))
+      (let [p (m.nextNamedParent node)]
+        (if p (m.nextNamedIbling p)
+              nil))))
 
 (fn nextNamedInnerNode [node]
   (if (> (node:named_child_count) 0)
       (node:named_child 0)
-      (nextNamedIbling node)))
+      (m.nextNamedIbling node)))
 
 (fn m.nextLexicalInnerNode [node line char]
   "Get the next node ahead of the cursor according to an in-order traversal of
@@ -34,13 +52,6 @@
     (if (or (and (= l line) (<= c char))
             (and (< l line)))
         (m.nextLexicalInnerNode (nextNamedInnerNode node) line char)
-        node)))
-
-(fn m.nextLexicalOuterNode [node line char]
-  (let [(l c _ _) (vim.treesitter.get_node_range node)]
-    (if (or (and (= l line) (<= c char))
-            (and (< l line)))
-        (m.nextLexicalOuterNode (nextNamedIbling node) line char)
         node)))
 
 (fn m.firstSurroundingNode [ldelim rdelim node]

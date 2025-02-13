@@ -22,4 +22,6 @@
                               (iter.iterate m.roundList)
                               (iter.iterate m.curlyList))))
 
+(set m.forwardOver {:not [:symbol_fragment]})
+
 m

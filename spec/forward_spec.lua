@@ -38,46 +38,22 @@ do
     end
     return b_2_auto0.it("will move to subsequent lines", _6_)
   end
-  b_2_auto.describe("Forward into element", _1_)
+  b_2_auto.describe("forwardInto fennel", _1_)
 end
 do
   local b_2_auto = require("plenary.busted")
   local function _8_()
-    do
-      local b_2_auto0 = require("plenary.busted")
-      local function _9_()
-        local function _10_(buf)
-          nvim.setup(buf, {"(|foo (bar baz) bang)"})
-          slurp.forwardOver()
-          return assert.is.same({"(foo |(bar baz) bang)"}, nvim.actual(buf, {cursor = true}))
-        end
-        return nvim.withBuf(_10_)
-      end
-      b_2_auto0.it("moves the cursor to the start of the next element", _9_)
-    end
-    do
-      local b_2_auto0 = require("plenary.busted")
-      local function _11_()
-        local function _12_(buf)
-          nvim.setup(buf, {"(foo |(bar baz) bang)"})
-          slurp.forwardOver()
-          return assert.is.same({"(foo (bar baz) |bang)"}, nvim.actual(buf, {cursor = true}))
-        end
-        return nvim.withBuf(_12_)
-      end
-      b_2_auto0.it("moves the cursor by sibling element only", _11_)
-    end
     local b_2_auto0 = require("plenary.busted")
-    local function _13_()
-      local function _14_(buf)
-        nvim.setup(buf, {"(|foo", "(bar baz)", "bang)"})
-        slurp.forwardOver()
-        return assert.is.same({"(foo", "|(bar baz)", "bang)"}, nvim.actual(buf, {cursor = true}))
+    local function _9_()
+      local function _10_(buf)
+        nvim.setup(buf, {"(|a.b.c :arg :arg)"})
+        slurp.forwardOver(require("slurp/lang/fennel"))
+        return assert.is.same({"(a.b.c |:arg :arg)"}, nvim.actual(buf, {cursor = true}))
       end
-      return nvim.withBuf(_14_)
+      return nvim.withBuf(_10_)
     end
-    return b_2_auto0.it("will move to subsequent lines", _13_)
+    return b_2_auto0.it("skips over symbol fragments", _9_)
   end
-  b_2_auto.describe("Forward over element", _8_)
+  b_2_auto.describe("forwardOver fennel", _8_)
 end
 return nil

@@ -14,6 +14,13 @@
 ; say something like "find the first let binding surrounding the cursor" because
 ; there's no way to match by delimiter or something.
 
+(fn typeMatch [node opts]
+  (let [types (or (. opts :not) opts)
+        f (if (. opts :not)
+              (fn [t] (not (= t (node:type))))
+              (fn [t] (= t (node:type))))]
+    (iter.find f (iter.iterate types))))
+
 (fn slurpSelect [nodeOrRange]
   (if (= nil nodeOrRange)
       nil
@@ -37,10 +44,17 @@
                     (- line 1)
                     (- col 1)))))
 
-(fn forwardOver []
-  (let [[_ line col _] (vim.fn.getpos ".")
-        node (vts.get_node)]
-    (ts.goto_node (tree.nextLexicalOuterNode node (- line 1) (- col 1)))))
+(fn forwardOver [lang]
+  (let [[_ row col _] (vim.fn.getpos ".")
+        node (vts.get_node)
+        ; TODO: better name for Iblings.
+        target (->> (tree.namedIblings node)
+                    (iter.filter (fn [n] (tree.isLexicallyAfter n row col)))
+                    (iter.find
+                      (fn [n] (typeMatch n lang.forwardOver))))]
+
+    (ts.goto_node target)))
+
 
 ; TODO: usage in README
 {;manipulation

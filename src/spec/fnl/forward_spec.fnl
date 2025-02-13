@@ -15,7 +15,7 @@
 (local slurp (require :slurp))
 
 (describe
-  "Forward into element"
+  "forwardInto fennel"
   (it
     "moves the cursor to the start of the next element"
     (nvim.withBuf (fn [buf]
@@ -44,33 +44,15 @@
           (nvim.actual buf {:cursor true}))))))
 
 (describe
-  "Forward over element"
+  "forwardOver fennel"
   (it
-    "moves the cursor to the start of the next element"
+    "skips over symbol fragments"
     (nvim.withBuf
       (fn [buf]
-        (nvim.setup buf ["(|foo (bar baz) bang)"])
-        (slurp.forwardOver)
+        (nvim.setup buf ["(|a.b.c :arg :arg)"])
+        (slurp.forwardOver (require :slurp/lang/fennel))
         (assert.is.same
-          ["(foo |(bar baz) bang)"]
-          (nvim.actual buf {:cursor true})))))
-  (it
-    "moves the cursor by sibling element only"
-    (nvim.withBuf
-      (fn [buf]
-        (nvim.setup buf ["(foo |(bar baz) bang)"])
-        (slurp.forwardOver)
-        (assert.is.same
-          ["(foo (bar baz) |bang)"]
-          (nvim.actual buf {:cursor true})))))
-  (it
-    "will move to subsequent lines"
-    (nvim.withBuf
-      (fn [buf]
-        (nvim.setup buf ["(|foo" "(bar baz)" "bang)"])
-        (slurp.forwardOver)
-        (assert.is.same
-          ["(foo" "|(bar baz)" "bang)"]
+          ["(a.b.c |:arg :arg)"]
           (nvim.actual buf {:cursor true}))))))
 
 nil
