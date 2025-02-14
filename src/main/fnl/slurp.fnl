@@ -3,17 +3,6 @@
 (local tree (require :slurp/tree))
 (local iter (require :slurp/iter))
 
-; TODO
-; want an API like
-; (slurp.select (->> (slurp.find [:binding_form :list :array :set :etc])
-;                    slurp.innerRange :fennel))
-; to select the inside of a node. Find locates a node of the given type by going
-; up the tree, then we have some functions to manipulat the node selection.
-; These have to be by grammar to be the most accurate. If we tried to do this
-; sort of thing in a language-unaware manner, it'd be impossible for the user to
-; say something like "find the first let binding surrounding the cursor" because
-; there's no way to match by delimiter or something.
-
 (fn typeMatch [node opts]
   (let [types (or (. opts :not) opts)
         f (if (. opts :not)
@@ -48,11 +37,10 @@
   (let [[_ row col _] (vim.fn.getpos ".")
         node (vts.get_node)
         ; TODO: better name for Iblings.
-        target (->> (tree.namedIblings node)
+        target (->> (tree.nodesOnLevel node)
                     (iter.filter (fn [n] (tree.isLexicallyAfter n row col)))
                     (iter.find
                       (fn [n] (typeMatch n lang.forwardOver))))]
-
     (ts.goto_node target)))
 
 

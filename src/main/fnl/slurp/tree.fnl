@@ -8,10 +8,10 @@
     (error "missing root node"))
   (iter.iterator m.nextNamedParent root))
 
-(fn m.namedIblings [root]
+(fn m.nodesOnLevel [root]
   (when (= nil root)
     (error "missing root node"))
-  (iter.iterator m.nextNamedIbling root))
+  (iter.iterator m.nextNamedNodeOnLevel root))
 
 (fn m.isLexicallyAfter [root row col]
   "True if the node's row and col is after the given 1,1-offset row and col."
@@ -30,20 +30,20 @@
             (m.nextNamedParent p))
         nil)))
 
-(fn m.nextNamedIbling [node]
+(fn m.nextNamedNodeOnLevel [node]
   "Get the next sibling or nibling"
   (when (= nil node)
     (error "nil node"))
   (if (node:next_named_sibling)
       (node:next_named_sibling)
       (let [p (m.nextNamedParent node)]
-        (if p (m.nextNamedIbling p)
+        (if p (m.nextNamedNodeOnLevel p)
               nil))))
 
 (fn nextNamedInnerNode [node]
   (if (> (node:named_child_count) 0)
       (node:named_child 0)
-      (m.nextNamedIbling node)))
+      (m.nextNamedNodeOnLevel node)))
 
 (fn m.nextLexicalInnerNode [node line char]
   "Get the next node ahead of the cursor according to an in-order traversal of

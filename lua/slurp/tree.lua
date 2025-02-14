@@ -8,12 +8,12 @@ m.namedParents = function(root)
   end
   return iter.iterator(m.nextNamedParent, root)
 end
-m.namedIblings = function(root)
+m.nodesOnLevel = function(root)
   if (nil == root) then
     error("missing root node")
   else
   end
-  return iter.iterator(m.nextNamedIbling, root)
+  return iter.iterator(m.nextNamedNodeOnLevel, root)
 end
 m.isLexicallyAfter = function(root, row, col)
   local l, c = vim.treesitter.get_node_range(root)
@@ -33,7 +33,7 @@ m.nextNamedParent = function(node)
     return nil
   end
 end
-m.nextNamedIbling = function(node)
+m.nextNamedNodeOnLevel = function(node)
   if (nil == node) then
     error("nil node")
   else
@@ -43,7 +43,7 @@ m.nextNamedIbling = function(node)
   else
     local p = m.nextNamedParent(node)
     if p then
-      return m.nextNamedIbling(p)
+      return m.nextNamedNodeOnLevel(p)
     else
       return nil
     end
@@ -53,7 +53,7 @@ local function nextNamedInnerNode(node)
   if (node:named_child_count() > 0) then
     return node:named_child(0)
   else
-    return m.nextNamedIbling(node)
+    return m.nextNamedNodeOnLevel(node)
   end
 end
 m.nextLexicalInnerNode = function(node, line, char)

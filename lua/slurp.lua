@@ -61,7 +61,7 @@ local function forwardOver(lang)
   local function _11_(n)
     return tree.isLexicallyAfter(n, row, col)
   end
-  target = iter.find(_10_, iter.filter(_11_, tree.namedIblings(node)))
+  target = iter.find(_10_, iter.filter(_11_, tree.nodesOnLevel(node)))
   return ts.goto_node(target)
 end
 return {forwardInto = forwardInto, forwardOver = forwardOver, select = slurpSelect, find = find}
