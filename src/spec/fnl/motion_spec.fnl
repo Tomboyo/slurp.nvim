@@ -41,7 +41,15 @@
         (slurp.forwardInto)
         (assert.is.same
           ["(foo" "|bar" "baz)"]
-          (nvim.actual buf {:cursor true}))))))
+          (nvim.actual buf {:cursor true})))))
+  (it
+    "accepts custom typeOpts"
+    (nvim.withBuf
+      #(do (nvim.setup $1 ["(|foo :bar baz)"])
+           (slurp.forwardInto {:not [:string :string_content]})
+           (assert.is.same
+             ["(foo :bar |baz)"]
+             (nvim.actual $1 {:cursor true}))))))
 
 (describe
   "forwardOver fennel"
@@ -50,9 +58,18 @@
     (nvim.withBuf
       (fn [buf]
         (nvim.setup buf ["(|a.b.c :arg :arg)"])
-        (slurp.forwardOver (require :slurp/lang/fennel))
+        (slurp.forwardOver)
         (assert.is.same
           ["(a.b.c |:arg :arg)"]
+          (nvim.actual buf {:cursor true})))))
+  (it
+    "accepts custom typeOpts"
+    (nvim.withBuf
+      (fn [buf]
+        (nvim.setup buf ["(|foo :bar baz)"])
+        (slurp.forwardOver {:not [:string :string_content]})
+        (assert.is.same
+          ["(foo :bar |baz)"]
           (nvim.actual buf {:cursor true}))))))
 
 (describe
@@ -62,7 +79,7 @@
     (nvim.withBuf
       (fn [buf]
         (nvim.setup buf ["(a.b.c |:arg)"])
-        (slurp.backwardOver (require :slurp/lang/fennel))
+        (slurp.backwardOver)
         (assert.is.same
           ["(|a.b.c :arg)"]
           (nvim.actual buf {:cursor true})))))
@@ -71,9 +88,18 @@
     (nvim.withBuf
       (fn [buf]
         (nvim.setup buf ["(foo" "(|bar))"])
-        (slurp.backwardOver (require :slurp/lang/fennel))
+        (slurp.backwardOver)
         (assert.is.same
           ["(|foo" "(bar))"]
+          (nvim.actual buf {:cursor true})))))
+  (it
+    "accepts custom typeOpts"
+    (nvim.withBuf
+      (fn [buf]
+        (nvim.setup buf ["(foo :bar |baz)"])
+        (slurp.backwardOver {:not [:string :string_content]})
+        (assert.is.same
+          ["(|foo :bar baz)"]
           (nvim.actual buf {:cursor true}))))))
 
 nil

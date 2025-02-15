@@ -3,12 +3,24 @@
 (local tree (require :slurp/tree))
 (local iter (require :slurp/iter))
 
-(fn typeMatch [node opts]
-  (let [types (or (. opts :not) opts)
-        f (if (. opts :not)
-              #(not (= $1 (node:type)))
-              #(= $1 (node:type)))]
-    (iter.find f (iter.iterate types))))
+(lambda typeMatch [node ?typeOpts]
+  (let [typeOpts (or ?typeOpts {:not []})
+        types (or (. typeOpts :not) typeOpts)
+        anyMatch (iter.find #(= $1 (node:type))
+                            (iter.iterate types))]
+    (if (. typeOpts :not)
+        (not anyMatch)
+        anyMatch)))
+
+(fn lang [ftype]
+  (let [(ok lang) (pcall #(require (.. :slurp/lang/ (or ftype vim.bo.filetype))))]
+    (if ok
+        lang
+        nil)))
+
+(lambda defaultTypeOpts [key]
+  (or (?. (lang) key)
+      {:not []}))
 
 (fn slurpSelect [nodeOrRange]
   (if (= nil nodeOrRange)
@@ -23,29 +35,35 @@
           #(typeMatch $1 types)
           (iter.iterate tree.nextParent root)))))
 
-(fn forwardInto []
-  (let [[_ row col _] (vim.fn.getpos ".")
+(fn forwardInto [typeOpts]
+  (let [typeOpts (or typeOpts (defaultTypeOpts :motionInto))
+        [_ row col _] (vim.fn.getpos ".")
         root (vts.get_node)]
     (ts.goto_node (->> (iter.iterate tree.nextDescending root)
-                       (iter.find #(tree.isLexicallyAfter $1 row col))))))
+                       (iter.filter #(tree.isLexicallyAfter $1 row col))
+                       (iter.find #(typeMatch $1 typeOpts))))))
 
-(fn forwardOver [lang]
-  (let [[_ row col _] (vim.fn.getpos ".")
+(fn forwardOver [typeOpts]
+  (let [typeOpts (or typeOpts (defaultTypeOpts :motionOver))
+        [_ row col _] (vim.fn.getpos ".")
         root (vts.get_node)
         target (->> (iter.iterate tree.nextAscending root)
                     (iter.filter #(tree.isLexicallyAfter $1 row col))
-                    (iter.find #(typeMatch $1 lang.motionOver)))]
+                    (iter.find #(typeMatch $1 typeOpts)))]
     (ts.goto_node target)))
 
-(fn backwardOver [lang]
-  (let [[_ row col _] (vim.fn.getpos ".")
+(fn backwardOver [typeOpts]
+  (let [typeOpts (or typeOpts (defaultTypeOpts :motionOver))
+        [_ row col _] (vim.fn.getpos ".")
         root (vts.get_node)]
     (ts.goto_node (->> (iter.iterate tree.prevAscending root)
                        (iter.filter #(tree.isLexicallyBefore $1 row col))
-                       (iter.find #(typeMatch $1 lang.motionOver))))))
+                       (iter.find #(typeMatch $1 typeOpts))))))
 
 ; TODO: usage in README
-{;manipulation
+{;util
+ :lang lang
+ ;manipulation
  ;TODO
  ;motion
  :forwardInto forwardInto
