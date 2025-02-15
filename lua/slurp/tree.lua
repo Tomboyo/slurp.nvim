@@ -15,6 +15,13 @@ m.nodesOnLevel = function(root)
   end
   return iter.iterator(m.nextNamedNodeOnLevel, root)
 end
+m.nodesBelowLevel = function(root)
+  if (nil == root) then
+    error("missing root node")
+  else
+  end
+  return iter.iterator(m.nextNamedInnerNode, root)
+end
 m.isLexicallyAfter = function(root, row, col)
   local l, c = vim.treesitter.get_node_range(root)
   local l0 = (1 + l)
@@ -49,7 +56,7 @@ m.nextNamedNodeOnLevel = function(node)
     end
   end
 end
-local function nextNamedInnerNode(node)
+m.nextNamedInnerNode = function(node)
   if (node:named_child_count() > 0) then
     return node:named_child(0)
   else
@@ -66,9 +73,9 @@ m.nextLexicalInnerNode = function(node, line, char)
 end
 m.firstSurroundingNode = function(ldelim, rdelim, node)
   local node0 = (node or vim.treesitter.get_node())
-  local _let_10_ = m.delimiters(node0)
-  local open = _let_10_[1]
-  local close = _let_10_[2]
+  local _let_11_ = m.delimiters(node0)
+  local open = _let_11_[1]
+  local close = _let_11_[2]
   if (open and close and (ldelim == vim.treesitter.get_node_text(open, 0)) and (rdelim == vim.treesitter.get_node_text(close, 0))) then
     return {node0, open, close}
   else
@@ -97,20 +104,20 @@ m.visualChildren = function(node)
   local function notBlank_3f(s)
     return not ((nil == s) or ("" == s))
   end
-  local function _15_(_14_)
-    local c = _14_[1]
-    local _ = _14_[2]
+  local function _16_(_15_)
+    local c = _15_[1]
+    local _ = _15_[2]
     return c
   end
-  local function _17_(_16_)
-    local _ = _16_[1]
-    local t = _16_[2]
+  local function _18_(_17_)
+    local _ = _17_[1]
+    local t = _17_[2]
     return notBlank_3f(t)
   end
-  local function _18_(c)
+  local function _19_(c)
     return {c, vim.treesitter.get_node_text(c, 0)}
   end
-  return iter.map(_15_, iter.filter(_17_, iter.map(_18_, node:iter_children())))
+  return iter.map(_16_, iter.filter(_18_, iter.map(_19_, node:iter_children())))
 end
 m.rangeBetween = function(s, e, opt)
   local opt0 = (opt or {})

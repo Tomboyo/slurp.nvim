@@ -27,11 +27,10 @@
           (tree.namedParents root)))))
 
 (fn forwardInto []
-  (let [[_ line col _] (vim.fn.getpos ".")]
-    (ts.goto_node (tree.nextLexicalInnerNode
-                    (ts.get_node_at_cursor)
-                    (- line 1)
-                    (- col 1)))))
+  (let [[_ row col _] (vim.fn.getpos ".")
+        node (vts.get_node)]
+    (ts.goto_node (->> (tree.nodesBelowLevel node)
+                       (iter.find (fn [n] (tree.isLexicallyAfter n row col)))))))
 
 (fn forwardOver [lang]
   (let [[_ row col _] (vim.fn.getpos ".")

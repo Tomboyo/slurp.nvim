@@ -13,6 +13,11 @@
     (error "missing root node"))
   (iter.iterator m.nextNamedNodeOnLevel root))
 
+(fn m.nodesBelowLevel [root]
+  (when (= nil root)
+    (error "missing root node"))
+  (iter.iterator m.nextNodeBelowLevel root))
+
 (fn m.isLexicallyAfter [root row col]
   "True if the node's row and col is after the given 1,1-offset row and col."
   ; get_node_range is 0-basec.
@@ -40,7 +45,7 @@
         (if p (m.nextNamedNodeOnLevel p)
               nil))))
 
-(fn nextNamedInnerNode [node]
+(fn m.nextNodeBelowLevel [node]
   (if (> (node:named_child_count) 0)
       (node:named_child 0)
       (m.nextNamedNodeOnLevel node)))
