@@ -34,7 +34,7 @@
         root (vts.get_node)
         target (->> (iter.iterate tree.nextAscending root)
                     (iter.filter #(tree.isLexicallyAfter $1 row col))
-                    (iter.find #(typeMatch $1 lang.forwardOver)))]
+                    (iter.find #(typeMatch $1 lang.motionOver)))]
     (ts.goto_node target)))
 
 (fn backwardOver [lang]
@@ -42,7 +42,7 @@
         root (vts.get_node)]
     (ts.goto_node (->> (iter.iterate tree.prevAscending root)
                        (iter.filter #(tree.isLexicallyBefore $1 row col))
-                       (iter.find #(typeMatch $1 lang.forwardOver))))))
+                       (iter.find #(typeMatch $1 lang.motionOver))))))
 
 ; TODO: usage in README
 {;manipulation

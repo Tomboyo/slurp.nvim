@@ -57,7 +57,7 @@ local function forwardOver(lang)
   local root = vts.get_node()
   local target
   local function _10_(_241)
-    return typeMatch(_241, lang.forwardOver)
+    return typeMatch(_241, lang.motionOver)
   end
   local function _11_(_241)
     return tree.isLexicallyAfter(_241, row, col)
@@ -73,7 +73,7 @@ local function backwardOver(lang)
   local _0 = _let_12_[4]
   local root = vts.get_node()
   local function _13_(_241)
-    return typeMatch(_241, lang.forwardOver)
+    return typeMatch(_241, lang.motionOver)
   end
   local function _14_(_241)
     return tree.isLexicallyBefore(_241, row, col)
