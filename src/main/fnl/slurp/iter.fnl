@@ -1,27 +1,21 @@
 (local m {})
 
-(fn m.iterator [f x]
-  "Produce an iterator from the function f. The iterator will yield x as its
-  first value, f(x) as the second, f(f(x)) as the third, and so on until the
-  application of f returns nil."
-  (var state x)
-  (fn []
-    (if (= nil state)
-        nil
-        (let [tmp state]
-          (set state (f state))
-          tmp))))
+(lambda m.iterate [a ?b]
+  "[table] Returns a stateful iterator over the elements of the table.
+   [f x] Returns a stateful iterator that returns x, f(x), f(f(x)), and so on."
+  (match (values (type a) a ?b)
+    (:table t) (m.stateful (ipairs t))
+    (:function f x) (do (var state x)
+                      (fn []
+                        (if (= nil state)
+                            nil
+                            (let [tmp state]
+                              (set state (f state))
+                              tmp))))))
 
 (comment
-  (let [it (m.iterator (fn [x] (if (< x 5) (+ 1 x))) 0)]
+  (let [it (m.iterate (fn [x] (if (< x 5) (+ 1 x))) 0)]
     (icollect [v it] v))
-  )
-
-(fn m.iterate [arr]
-  "Return an iterator over successive elements of the given array table"
-  (m.stateful (ipairs arr)))
-
-(comment
   (let [it (m.iterate [:a :b :c])]
     (icollect [v it] v))
   )
@@ -98,7 +92,7 @@
               (f))))))
 
 (comment
-  (let [ints (m.iterator (fn [i] (if (< i 10) (+ i 1))) 0)
+  (let [ints (m.iterate (fn [i] (if (< i 10) (+ i 1))) 0)
         three (m.filter (fn [i] (< i 3)) ints)]
     (icollect [v three] v))
   )
@@ -123,9 +117,9 @@
   ((m.filter pred iter)))
 
 (comment
-  (let [ints (m.iterator (fn [i] (if (< i 10) (+ i 1))) 0)]
+  (let [ints (m.iterate (fn [i] (if (< i 10) (+ i 1))) 0)]
     (m.find (fn [x] (= x 3)) ints))
-  (let [it (m.iterator (fn [] nil) nil)]
+  (let [it (m.iterate (fn [] nil) nil)]
     (m.find (fn [x] (error "I am never called")) it))
   )
 

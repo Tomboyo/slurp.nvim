@@ -6,8 +6,8 @@
 (fn typeMatch [node opts]
   (let [types (or (. opts :not) opts)
         f (if (. opts :not)
-              (fn [t] (not (= t (node:type))))
-              (fn [t] (= t (node:type))))]
+              #(not (= $1 (node:type)))
+              #(= $1 (node:type)))]
     (iter.find f (iter.iterate types))))
 
 (fn slurpSelect [nodeOrRange]
@@ -20,26 +20,22 @@
       (vts.get_node)
       (let [root (or root (vts.get_node))]
         (iter.find
-          (fn [n] 
-            (iter.find
-                    (fn [type] (= type (n:type)))
-                    (iter.stateful (ipairs types))))
-          (tree.namedParents root)))))
+          #(typeMatch $1 types)
+          (iter.iterate tree.nextParent root)))))
 
 (fn forwardInto []
   (let [[_ row col _] (vim.fn.getpos ".")
-        node (vts.get_node)]
-    (ts.goto_node (->> (tree.nodesBelowLevel node)
-                       (iter.find (fn [n] (tree.isLexicallyAfter n row col)))))))
+        root (vts.get_node)]
+    (ts.goto_node (->> (iter.iterate tree.nextDescending root)
+                       (iter.find #(tree.isLexicallyAfter $1 row col))))))
 
 (fn forwardOver [lang]
   (let [[_ row col _] (vim.fn.getpos ".")
-        node (vts.get_node)
+        root (vts.get_node)
         ; TODO: better name for Iblings.
-        target (->> (tree.nodesOnLevel node)
-                    (iter.filter (fn [n] (tree.isLexicallyAfter n row col)))
-                    (iter.find
-                      (fn [n] (typeMatch n lang.forwardOver))))]
+        target (->> (iter.iterate tree.nextAscending root)
+                    (iter.filter #(tree.isLexicallyAfter $1 row col))
+                    (iter.find #(typeMatch $1 lang.forwardOver)))]
     (ts.goto_node target)))
 
 

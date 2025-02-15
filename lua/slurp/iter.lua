@@ -1,22 +1,29 @@
 local m = {}
-m.iterator = function(f, x)
-  local state = x
-  local function _1_()
-    if (nil == state) then
-      return nil
-    else
-      local tmp = state
-      state = f(state)
-      return tmp
+m.iterate = function(a, _3fb)
+  _G.assert((nil ~= a), "Missing argument a on src/main/fnl/slurp/iter.fnl:3")
+  local _1_, _2_, _3_ = type(a), a, _3fb
+  if ((_1_ == "table") and (nil ~= _2_)) then
+    local t = _2_
+    return m.stateful(ipairs(t))
+  elseif ((_1_ == "function") and (nil ~= _2_) and (nil ~= _3_)) then
+    local f = _2_
+    local x = _3_
+    local state = x
+    local function _4_()
+      if (nil == state) then
+        return nil
+      else
+        local tmp = state
+        state = f(state)
+        return tmp
+      end
     end
+    return _4_
+  else
+    return nil
   end
-  return _1_
 end
---[[ (let [it (m.iterator (fn [x] (if (< x 5) (+ 1 x))) 0)] (icollect [v it] v)) ]]
-m.iterate = function(arr)
-  return m.stateful(ipairs(arr))
-end
---[[ (let [it (m.iterate ["a" "b" "c"])] (icollect [v it] v)) ]]
+--[[ (let [it (m.iterate (fn [x] (if (< x 5) (+ 1 x))) 0)] (icollect [v it] v)) (let [it (m.iterate ["a" "b" "c"])] (icollect [v it] v)) ]]
 m.concat = function(...)
   local iters = {...}
   local i = 1
@@ -39,7 +46,7 @@ end
 --[[ (let [a (m.iterate ["a" "b" "c"]) b (m.iterate [1 2 3]) c (m.concat a b)] (m.collect c)) (m.collect (m.concat)) ]]
 m.stateful = function(iter, a, i)
   local state = i
-  local function _5_()
+  local function _9_()
     local s, v = iter(a, state)
     if (nil == v) then
       return nil
@@ -48,12 +55,12 @@ m.stateful = function(iter, a, i)
       return v
     end
   end
-  return _5_
+  return _9_
 end
 --[[ (let [it (m.stateful (ipairs ["a" "b" "c"]))] (icollect [v it] v)) ]]
 m.indexed = function(f)
   local state = 0
-  local function _7_()
+  local function _11_()
     local n = f()
     local tmp = state
     if (nil == n) then
@@ -63,7 +70,7 @@ m.indexed = function(f)
       return {tmp, n}
     end
   end
-  return _7_
+  return _11_
 end
 --[[ (let [it (m.stateful (ipairs ["a" "b" "c"])) it (m.indexed it)] (icollect [v it] v)) ]]
 m.filter = function(pred, iter)
@@ -81,9 +88,9 @@ m.filter = function(pred, iter)
   end
   return f
 end
---[[ (let [ints (m.iterator (fn [i] (if (< i 10) (+ i 1))) 0) three (m.filter (fn [i] (< i 3)) ints)] (icollect [v three] v)) ]]
+--[[ (let [ints (m.iterate (fn [i] (if (< i 10) (+ i 1))) 0) three (m.filter (fn [i] (< i 3)) ints)] (icollect [v three] v)) ]]
 m.map = function(f, iter)
-  local function _11_()
+  local function _15_()
     local v = iter()
     if (nil == v) then
       return nil
@@ -91,24 +98,24 @@ m.map = function(f, iter)
       return f(v)
     end
   end
-  return _11_
+  return _15_
 end
 --[[ (let [it (m.stateful (ipairs [1 2 3 4])) it (m.map (fn [x] (* x x)) it)] (icollect [v it] v)) ]]
 m.find = function(pred, iter)
   return m.filter(pred, iter)()
 end
---[[ (let [ints (m.iterator (fn [i] (if (< i 10) (+ i 1))) 0)] (m.find (fn [x] (= x 3)) ints)) (let [it (m.iterator (fn [] nil) nil)] (m.find (fn [x] (error "I am never called")) it)) ]]
+--[[ (let [ints (m.iterate (fn [i] (if (< i 10) (+ i 1))) 0)] (m.find (fn [x] (= x 3)) ints)) (let [it (m.iterate (fn [] nil) nil)] (m.find (fn [x] (error "I am never called")) it)) ]]
 m.nth = function(n, iter)
   local el = iter()
-  local _13_ = {n, el}
-  if (true and (_13_[2] == nil)) then
-    local _ = _13_[1]
+  local _17_ = {n, el}
+  if (true and (_17_[2] == nil)) then
+    local _ = _17_[1]
     return nil
-  elseif ((_13_[1] == 0) and true) then
-    local _ = _13_[2]
+  elseif ((_17_[1] == 0) and true) then
+    local _ = _17_[2]
     return el
   else
-    local _ = _13_
+    local _ = _17_
     return m.nth((n - 1), iter)
   end
 end

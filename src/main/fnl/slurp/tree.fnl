@@ -2,52 +2,35 @@
 (local iter (require :slurp/iter))
 (local m {})
 
-(fn m.namedParents [root]
-  "Returns an iterator over root and its named parents"
-  (when (= nil root)
-    (error "missing root node"))
-  (iter.iterator m.nextNamedParent root))
-
-(fn m.nodesOnLevel [root]
-  (when (= nil root)
-    (error "missing root node"))
-  (iter.iterator m.nextNamedNodeOnLevel root))
-
-(fn m.nodesBelowLevel [root]
-  (when (= nil root)
-    (error "missing root node"))
-  (iter.iterator m.nextNodeBelowLevel root))
-
 (fn m.isLexicallyAfter [root row col]
   "True if the node's row and col is after the given 1,1-offset row and col."
-  ; get_node_range is 0-basec.
+  ; get_node_range is 0,0-based.
   (let [(l c) (vim.treesitter.get_node_range root)
         l (+ 1 l)
         c (+ 1 c)]
     (or (> l row)
         (and (= l row) (> c col)))))
 
-(fn m.nextNamedParent [node]
+(fn m.nextParent [node]
   (let [p (node:parent)]
     (if p
         (if (p:named)
             p
-            (m.nextNamedParent p))
+            (m.nextParent p))
         nil)))
 
-(fn m.nextNamedNodeOnLevel [node]
-  "Get the next sibling or nibling"
+(fn m.nextAscending [node]
   (when (= nil node)
     (error "nil node"))
   (if (node:next_named_sibling)
       (node:next_named_sibling)
-      (let [p (m.nextNamedParent node)]
-        (if p (m.nextNamedNodeOnLevel p)
+      (let [p (m.nextParent node)]
+        (if p (m.nextAscending p)
               nil))))
 
-(fn m.nextNodeBelowLevel [node]
+(fn m.nextDescending [node]
   (if (> (node:named_child_count) 0)
       (node:named_child 0)
-      (m.nextNamedNodeOnLevel node)))
+      (m.nextAscending node)))
 
 m
