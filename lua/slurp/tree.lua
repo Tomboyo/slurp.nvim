@@ -7,6 +7,15 @@ m.isLexicallyAfter = function(root, row, col)
   local c0 = (1 + c)
   return ((l0 > row) or ((l0 == row) and (c0 > col)))
 end
+m.isLexicallyBefore = function(root, row, col)
+  _G.assert((nil ~= col), "Missing argument col on src/main/fnl/slurp/tree.fnl:14")
+  _G.assert((nil ~= row), "Missing argument row on src/main/fnl/slurp/tree.fnl:14")
+  _G.assert((nil ~= root), "Missing argument root on src/main/fnl/slurp/tree.fnl:14")
+  local l, c = vim.treesitter.get_node_range(root)
+  local l0 = (1 + l)
+  local c0 = (1 + c)
+  return ((l0 < row) or ((l0 == row) and (c0 < col)))
+end
 m.nextParent = function(node)
   local p = node:parent()
   if p then
@@ -30,6 +39,19 @@ m.nextAscending = function(node)
     local p = m.nextParent(node)
     if p then
       return m.nextAscending(p)
+    else
+      return nil
+    end
+  end
+end
+m.prevAscending = function(node)
+  _G.assert((nil ~= node), "Missing argument node on src/main/fnl/slurp/tree.fnl:38")
+  if node:prev_named_sibling() then
+    return node:prev_named_sibling()
+  else
+    local p = m.nextParent(node)
+    if p then
+      return m.prevAscending(p)
     else
       return nil
     end

@@ -11,6 +11,13 @@
     (or (> l row)
         (and (= l row) (> c col)))))
 
+(lambda m.isLexicallyBefore [root row col]
+  (let [(l c) (vim.treesitter.get_node_range root)
+        l (+ 1 l)
+        c (+ 1 c)]
+    (or (< l row)
+        (and (= l row) (< c col)))))
+
 (fn m.nextParent [node]
   (let [p (node:parent)]
     (if p
@@ -28,9 +35,14 @@
         (if p (m.nextAscending p)
               nil))))
 
+(lambda m.prevAscending [node]
+  (if (node:prev_named_sibling)
+      (node:prev_named_sibling)
+      (let [p (m.nextParent node)]
+        (if p (m.prevAscending p)))))
+
 (fn m.nextDescending [node]
   (if (> (node:named_child_count) 0)
       (node:named_child 0)
       (m.nextAscending node)))
-
 m

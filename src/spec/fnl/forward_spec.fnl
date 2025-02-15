@@ -55,4 +55,16 @@
           ["(a.b.c |:arg :arg)"]
           (nvim.actual buf {:cursor true}))))))
 
+(describe
+  "backwardOver fennel"
+  (it
+    "skips over symbol fragments"
+    (nvim.withBuf
+      (fn [buf]
+        (nvim.setup buf ["(a.b.c |:arg)"])
+        (slurp.backwardOver (require :slurp/lang/fennel))
+        (assert.is.same
+          ["(|a.b.c :arg)"]
+          (nvim.actual buf {:cursor true}))))))
+
 nil

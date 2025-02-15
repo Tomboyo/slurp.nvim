@@ -56,4 +56,20 @@ do
   end
   b_2_auto.describe("forwardOver fennel", _8_)
 end
+do
+  local b_2_auto = require("plenary.busted")
+  local function _11_()
+    local b_2_auto0 = require("plenary.busted")
+    local function _12_()
+      local function _13_(buf)
+        nvim.setup(buf, {"(a.b.c |:arg)"})
+        slurp.backwardOver(require("slurp/lang/fennel"))
+        return assert.is.same({"(|a.b.c :arg)"}, nvim.actual(buf, {cursor = true}))
+      end
+      return nvim.withBuf(_13_)
+    end
+    return b_2_auto0.it("skips over symbol fragments", _12_)
+  end
+  b_2_auto.describe("backwardOver fennel", _11_)
+end
 return nil

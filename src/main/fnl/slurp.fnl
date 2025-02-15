@@ -32,12 +32,17 @@
 (fn forwardOver [lang]
   (let [[_ row col _] (vim.fn.getpos ".")
         root (vts.get_node)
-        ; TODO: better name for Iblings.
         target (->> (iter.iterate tree.nextAscending root)
                     (iter.filter #(tree.isLexicallyAfter $1 row col))
                     (iter.find #(typeMatch $1 lang.forwardOver)))]
     (ts.goto_node target)))
 
+(fn backwardOver [lang]
+  (let [[_ row col _] (vim.fn.getpos ".")
+        root (vts.get_node)]
+    (ts.goto_node (->> (iter.iterate tree.prevAscending root)
+                       (iter.filter #(tree.isLexicallyBefore $1 row col))
+                       (iter.find #(typeMatch $1 lang.forwardOver))))))
 
 ; TODO: usage in README
 {;manipulation
@@ -45,6 +50,7 @@
  ;motion
  :forwardInto forwardInto
  :forwardOver forwardOver
+ :backwardOver backwardOver
  ;text objects
  :select slurpSelect
  :find find}

@@ -65,4 +65,19 @@ local function forwardOver(lang)
   target = iter.find(_10_, iter.filter(_11_, iter.iterate(tree.nextAscending, root)))
   return ts.goto_node(target)
 end
-return {forwardInto = forwardInto, forwardOver = forwardOver, select = slurpSelect, find = find}
+local function backwardOver(lang)
+  local _let_12_ = vim.fn.getpos(".")
+  local _ = _let_12_[1]
+  local row = _let_12_[2]
+  local col = _let_12_[3]
+  local _0 = _let_12_[4]
+  local root = vts.get_node()
+  local function _13_(_241)
+    return typeMatch(_241, lang.forwardOver)
+  end
+  local function _14_(_241)
+    return tree.isLexicallyBefore(_241, row, col)
+  end
+  return ts.goto_node(iter.find(_13_, iter.filter(_14_, iter.iterate(tree.prevAscending, root))))
+end
+return {forwardInto = forwardInto, forwardOver = forwardOver, backwardOver = backwardOver, select = slurpSelect, find = find}
