@@ -59,16 +59,28 @@ end
 do
   local b_2_auto = require("plenary.busted")
   local function _11_()
-    local b_2_auto0 = require("plenary.busted")
-    local function _12_()
-      local function _13_(buf)
-        nvim.setup(buf, {"(a.b.c |:arg)"})
-        slurp.backwardOver(require("slurp/lang/fennel"))
-        return assert.is.same({"(|a.b.c :arg)"}, nvim.actual(buf, {cursor = true}))
+    do
+      local b_2_auto0 = require("plenary.busted")
+      local function _12_()
+        local function _13_(buf)
+          nvim.setup(buf, {"(a.b.c |:arg)"})
+          slurp.backwardOver(require("slurp/lang/fennel"))
+          return assert.is.same({"(|a.b.c :arg)"}, nvim.actual(buf, {cursor = true}))
+        end
+        return nvim.withBuf(_13_)
       end
-      return nvim.withBuf(_13_)
+      b_2_auto0.it("skips over symbol fragments", _12_)
     end
-    return b_2_auto0.it("skips over symbol fragments", _12_)
+    local b_2_auto0 = require("plenary.busted")
+    local function _14_()
+      local function _15_(buf)
+        nvim.setup(buf, {"(foo", "(|bar))"})
+        slurp.backwardOver(require("slurp/lang/fennel"))
+        return assert.is.same({"(|foo", "(bar))"}, nvim.actual(buf, {cursor = true}))
+      end
+      return nvim.withBuf(_15_)
+    end
+    return b_2_auto0.it("does not stop on the parent node", _14_)
   end
   b_2_auto.describe("backwardOver fennel", _11_)
 end

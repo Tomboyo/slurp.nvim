@@ -65,6 +65,15 @@
         (slurp.backwardOver (require :slurp/lang/fennel))
         (assert.is.same
           ["(|a.b.c :arg)"]
+          (nvim.actual buf {:cursor true})))))
+  (it
+    "does not stop on the parent node"
+    (nvim.withBuf
+      (fn [buf]
+        (nvim.setup buf ["(foo" "(|bar))"])
+        (slurp.backwardOver (require :slurp/lang/fennel))
+        (assert.is.same
+          ["(|foo" "(bar))"]
           (nvim.actual buf {:cursor true}))))))
 
 nil
