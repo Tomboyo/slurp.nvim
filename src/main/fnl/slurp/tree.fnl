@@ -45,4 +45,14 @@
   (if (> (node:named_child_count) 0)
       (node:named_child 0)
       (m.nextAscending node)))
+
+(fn m.prevDescending [node]
+  (let [prev (node:prev_named_sibling)]
+    (if prev
+        (let [c (prev:named_child_count)]
+          (if (> c 0)
+              (prev:named_child (- c 1))
+              prev))
+        (m.nextParent node))))
+
 m

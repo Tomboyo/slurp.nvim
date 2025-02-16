@@ -120,4 +120,56 @@ do
   end
   b_2_auto.describe("backwardOver fennel", _15_)
 end
+do
+  local b_2_auto = require("plenary.busted")
+  local function _22_()
+    do
+      local b_2_auto0 = require("plenary.busted")
+      local function _23_()
+        local function _24_(_241)
+          nvim.setup(_241, {"(foo (bar baz) |bang)"})
+          slurp.backwardInto()
+          return assert.is.same({"(foo (bar |baz) bang)"}, nvim.actual(_241, {cursor = true}))
+        end
+        return nvim.withBuf(_24_)
+      end
+      b_2_auto0.it("steps into child elements", _23_)
+    end
+    do
+      local b_2_auto0 = require("plenary.busted")
+      local function _25_()
+        local function _26_(_241)
+          nvim.setup(_241, {"(foo (|bar) baz)"})
+          slurp.backwardInto()
+          return assert.is.same({"(foo |(bar) baz)"}, nvim.actual(_241, {cursor = true}))
+        end
+        return nvim.withBuf(_26_)
+      end
+      b_2_auto0.it("stops on parent elements", _25_)
+    end
+    do
+      local b_2_auto0 = require("plenary.busted")
+      local function _27_()
+        local function _28_(_241)
+          nvim.setup(_241, {"a.b.|c"})
+          slurp.backwardInto()
+          return assert.is.same({"a.|b.c"}, nvim.actual(_241, {cursor = true}))
+        end
+        return nvim.withBuf(_28_)
+      end
+      b_2_auto0.it("stops on symbol fragments", _27_)
+    end
+    local b_2_auto0 = require("plenary.busted")
+    local function _29_()
+      local function _30_(_241)
+        nvim.setup(_241, {"(drink (more :glurp) |slurm)"})
+        slurp.backwardInto({["not"] = {"string", "string_content"}})
+        return assert.is.same({"(drink (|more :glurp) slurm)"}, nvim.actual(_241, {cursor = true}))
+      end
+      return nvim.withBuf(_30_)
+    end
+    return b_2_auto0.it("accepts custom typeOpts", _29_)
+  end
+  b_2_auto.describe("backwardInto fennel", _22_)
+end
 return nil

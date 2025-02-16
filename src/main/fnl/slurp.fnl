@@ -52,6 +52,14 @@
                     (iter.find #(typeMatch $1 typeOpts)))]
     (ts.goto_node target)))
 
+(fn backwardInto [typeOpts]
+  (let [typeOpts (or typeOpts (defaultTypeOpts :motionInto))
+        [_ row col _] (vim.fn.getpos ".")
+        root (vts.get_node)]
+    (ts.goto_node (->> (iter.iterate tree.prevDescending root)
+                       (iter.filter #(tree.isLexicallyBefore $1 row col))
+                       (iter.find #(typeMatch $1 typeOpts))))))
+
 (fn backwardOver [typeOpts]
   (let [typeOpts (or typeOpts (defaultTypeOpts :motionOver))
         [_ row col _] (vim.fn.getpos ".")
@@ -69,6 +77,7 @@
  :forwardInto forwardInto
  :forwardOver forwardOver
  :backwardOver backwardOver
+ :backwardInto backwardInto
  ;text objects
  :select slurpSelect
  :find find}

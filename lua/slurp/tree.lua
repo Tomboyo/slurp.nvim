@@ -64,4 +64,17 @@ m.nextDescending = function(node)
     return m.nextAscending(node)
   end
 end
+m.prevDescending = function(node)
+  local prev = node:prev_named_sibling()
+  if prev then
+    local c = prev:named_child_count()
+    if (c > 0) then
+      return prev:named_child((c - 1))
+    else
+      return prev
+    end
+  else
+    return m.nextParent(node)
+  end
+end
 return m

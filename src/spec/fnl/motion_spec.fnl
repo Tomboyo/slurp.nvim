@@ -102,4 +102,39 @@
           ["(|foo :bar baz)"]
           (nvim.actual buf {:cursor true}))))))
 
+(describe
+  "backwardInto fennel"
+  (it
+    "steps into child elements"
+    (nvim.withBuf
+      #(do (nvim.setup $1 ["(foo (bar baz) |bang)"])
+           (slurp.backwardInto)
+           (assert.is.same
+             ["(foo (bar |baz) bang)"]
+             (nvim.actual $1 {:cursor true})))))
+  (it
+    "stops on parent elements"
+    (nvim.withBuf
+      #(do (nvim.setup $1 ["(foo (|bar) baz)"])
+           (slurp.backwardInto)
+           (assert.is.same
+             ["(foo |(bar) baz)"]
+             (nvim.actual $1 {:cursor true})))))
+  (it
+    "stops on symbol fragments"
+    (nvim.withBuf
+      #(do (nvim.setup $1 ["a.b.|c"])
+           (slurp.backwardInto)
+           (assert.is.same
+             ["a.|b.c"]
+             (nvim.actual $1 {:cursor true})))))
+  (it
+    "accepts custom typeOpts"
+    (nvim.withBuf
+      #(do (nvim.setup $1 ["(drink (more :glurp) |slurm)"])
+           (slurp.backwardInto {:not [:string :string_content]})
+           (assert.is.same
+             ["(drink (|more :glurp) slurm)"]
+             (nvim.actual $1 {:cursor true}))))))
+
 nil
