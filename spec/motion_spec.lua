@@ -127,13 +127,13 @@ do
       local b_2_auto0 = require("plenary.busted")
       local function _23_()
         local function _24_(_241)
-          nvim.setup(_241, {"(foo (bar baz) |bang)"})
+          nvim.setup(_241, {"(foo (bar ((baz))) |bang)"})
           slurp.backwardInto()
-          return assert.is.same({"(foo (bar |baz) bang)"}, nvim.actual(_241, {cursor = true}))
+          return assert.is.same({"(foo (bar ((|baz))) bang)"}, nvim.actual(_241, {cursor = true}))
         end
         return nvim.withBuf(_24_)
       end
-      b_2_auto0.it("steps into child elements", _23_)
+      b_2_auto0.it("stops on the deepest child of the previous sibling", _23_)
     end
     do
       local b_2_auto0 = require("plenary.busted")

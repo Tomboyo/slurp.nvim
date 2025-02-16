@@ -65,14 +65,17 @@ m.nextDescending = function(node)
   end
 end
 m.prevDescending = function(node)
-  local prev = node:prev_named_sibling()
-  if prev then
-    local c = prev:named_child_count()
-    if (c > 0) then
-      return prev:named_child((c - 1))
+  local function lastLeaf(node0)
+    local c = node0:named_child_count()
+    if (c < 1) then
+      return node0
     else
-      return prev
+      return lastLeaf(node0:named_child((c - 1)))
     end
+  end
+  local sibling = node:prev_named_sibling()
+  if sibling then
+    return lastLeaf(sibling)
   else
     return m.nextParent(node)
   end

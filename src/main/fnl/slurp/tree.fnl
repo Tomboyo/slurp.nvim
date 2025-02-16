@@ -47,12 +47,14 @@
       (m.nextAscending node)))
 
 (fn m.prevDescending [node]
-  (let [prev (node:prev_named_sibling)]
-    (if prev
-        (let [c (prev:named_child_count)]
-          (if (> c 0)
-              (prev:named_child (- c 1))
-              prev))
+  (fn lastLeaf [node]
+    (let [c (node:named_child_count)]
+      (if (< c 1)
+          node
+          (lastLeaf (node:named_child (- c 1))))))
+  (let [sibling (node:prev_named_sibling)]
+    (if sibling
+        (lastLeaf sibling)
         (m.nextParent node))))
 
 m

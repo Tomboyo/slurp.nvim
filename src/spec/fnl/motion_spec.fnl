@@ -105,12 +105,12 @@
 (describe
   "backwardInto fennel"
   (it
-    "steps into child elements"
+    "stops on the deepest child of the previous sibling"
     (nvim.withBuf
-      #(do (nvim.setup $1 ["(foo (bar baz) |bang)"])
+      #(do (nvim.setup $1 ["(foo (bar ((baz))) |bang)"])
            (slurp.backwardInto)
            (assert.is.same
-             ["(foo (bar |baz) bang)"]
+             ["(foo (bar ((|baz))) bang)"]
              (nvim.actual $1 {:cursor true})))))
   (it
     "stops on parent elements"
